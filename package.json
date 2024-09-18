@@ -1,0 +1,20 @@
+{
+  "name": "selva",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "app": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.0",
+    "nodemon": "^3.1.5",
+    "osc": "^2.4.5",
+    "p5": "^1.10.0",
+    "q5": "^2.4.4",
+    "ws": "^8.18.0"
+  }
+}
