@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/p5": "^1.7.6",
     "express": "^4.21.0",
     "nodemon": "^3.1.5",
     "osc": "^2.4.5",

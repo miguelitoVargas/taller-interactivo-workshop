@@ -7,12 +7,13 @@ class Cielo {
     this.xoff = 0
     this.buffer = createFramebuffer({
       width: this.w,
-      height: this.h
+      height: this.h,
+      antialias: true
     })
   }
 
   generate () {
-    let inc = 0.03
+    let inc = 0.01
 
     clear()
     this.buffer.loadPixels()
