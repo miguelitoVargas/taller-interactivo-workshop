@@ -1,21 +1,22 @@
 class Cielo {
   constructor () {
-    this.w = 960
-    this.h = 540
+    this.w = 640
+    this.h = 360
     this.zoff = 0
     this.yoff = 0
     this.xoff = 0
-    this.buffer = createFramebuffer({
-      width: this.w,
-      height: this.h,
-      antialias: true
-    })
+    // this.buffer = createFramebuffer({
+    //   width: this.w,
+    //   height: this.h
+    // })
+    this.buffer = createImage(this.w, this.h)
   }
 
   generate () {
-    let inc = 0.01
+    let inc = 0.03
 
-    clear()
+    // this.buffer.reset()
+    // clear()
     this.buffer.loadPixels()
     this.yoff = 0
     for (let y = 0; y < this.h; y++) {
@@ -24,14 +25,14 @@ class Cielo {
         // indice del pixel basado en la posicion
         let index = (x + y * this.w) * 4
         // octaves, falloff in percent
-        noiseDetail(12, 0.5)
+        noiseDetail(8, 0.7)
 
         // valor de ruido de perlin en 3 dimensiones
         let r = noise(this.xoff, this.yoff, this.zoff) * 255
 
-        this.buffer.pixels[index] = 135
-        this.buffer.pixels[index + 1] = 206
-        this.buffer.pixels[index + 2] = 250
+        this.buffer.pixels[index] = r //135
+        this.buffer.pixels[index + 1] = r //206
+        this.buffer.pixels[index + 2] = r //250
         this.buffer.pixels[index + 3] = r
         this.xoff += inc
 
@@ -46,7 +47,8 @@ class Cielo {
   }
 
   cieloImg () {
-    return this.buffer
+    const cImage = createImage(this.w, this.h)
+    return cImage.copy(this.buffer)
   }
 }
 
