@@ -1,6 +1,11 @@
 class Serpent {
   constructor (w, h) {
 
+    const gc = document.createElement('canvas')
+    gc.getContext('2d', {
+      willReadFrequently: true
+    })
+
     this.pointX = 400
     this.pointY = 400
     this.circleRadius = 5
@@ -9,16 +14,17 @@ class Serpent {
     this.angle = 0.01
     this.w = w
     this.h = h
-    this.sGraphics = createGraphics(w, h)
-    this.sGraphics.background(0)
+    this.sGraphics = createGraphics(w, h, P2D, gc)
+    this.sGraphics.background(0, 0)
   }
 
   display () {
     this.angle += 0.5
     this.sGraphics.frameRate(5)
     this.sGraphics.noStroke()
+
     this.sGraphics.fill(255)
-    this.sGraphics.circle(this.pointX, this.pointY, this.circleRadius*3)
+    this.sGraphics.circle(this.pointX, this.pointY, this.circleRadius*5)
 
 
     if (keyCode==UP_ARROW){
@@ -56,5 +62,6 @@ class Serpent {
     this.pointX  < 0 && (this.pointX = this.w)
     this.pointY > this.h && (this.pointY = 0)
     this.pointY < 0 && (this.pointY = this.h)
+    // return null
   }
 }
