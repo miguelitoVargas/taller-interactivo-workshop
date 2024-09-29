@@ -23,7 +23,6 @@ let cielo, serpiente, sMask
 
 function preload () {
   fondo = loadImage('assets/fondo.png')
-  rainforest = loadImage('assets/rainforest.jpg')
   serpienteSonido = loadSound('assets/serpiente.mp3')
   for (let i = 1; i <= 4; i++) {
     fondos.push(loadImage(`assets/fondo-${i}.png`))
@@ -64,8 +63,7 @@ function setup() {
 }
 
 function draw() {
-  if (mouseIsPressed) {
-
+  if (frameCount%1000 === 0) {
     cielo.generate()
   }
 
