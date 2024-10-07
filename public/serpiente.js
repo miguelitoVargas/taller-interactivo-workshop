@@ -9,6 +9,7 @@ class Serpent {
     this.pointX = 400
     this.pointY = 400
     this.circleRadius = 5
+    this.sDiameter = 25
     this.xDirection = 1
     this.yDirection = 1
     this.angle = 0.01
@@ -16,46 +17,94 @@ class Serpent {
     this.h = h
     this.sGraphics = createGraphics(w, h, P2D, gc)
     this.sGraphics.background(0, 0)
+    this.tAngle = 3*HALF_PI
+    this.tLength = 0
   }
 
   display () {
     this.angle += 0.5
-    this.sGraphics.frameRate(5)
+    this.tLength = (this.tLength + 2)%15
+    // this.sGraphics.frameRate(5)
     this.sGraphics.noStroke()
 
     this.sGraphics.fill(255)
-    this.sGraphics.circle(this.pointX, this.pointY, this.circleRadius*5)
+    this.sGraphics.stroke(255)
+    // this.sGraphics.push()
+    // this.sGraphics.translate(this.pointX, this.pointY)
+    // this.sGraphics.circle(0, 0, this.sDiameter)
+    // this.sGraphics.pop()
+    this.sGraphics.circle(this.pointX, this.pointY, this.sDiameter)
+    this.sGraphics.push()
+      // this.sGraphics.strokeWeight(2)
+      this.sGraphics.translate(this.pointX, this.pointY)
+      // this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
+      this.sGraphics.rotate(this.tAngle)
+      this.sGraphics.point(0, this.sDiameter/2)
+      this.sGraphics.line(0, this.sDiameter/2, 0, this.sDiameter/2 + this.tLength)
+      this.sGraphics.translate(0, this.sDiameter/2 + this.tLength)
+      // this.sGraphics.line(0, 0, cos(QUARTER_PI/2) * 30, 0)
+      this.sGraphics.line(0, 0, 8, 8)
+      this.sGraphics.line(0, 0, -8, 8)
+
+    this.sGraphics.pop()
 
 
     if (keyCode==UP_ARROW){
       //pointY -=2;
       this.yDirection = -1
+      this.tAngle = PI
       this.pointY += 2 * this.yDirection
       this.pointX = this.pointX + this.circleRadius * cos(this.angle)
+      // lengua
+      // this.sGraphics.push()
+      //   this.sGraphics.strokeWeight(4)
+      //   this.sGraphics.translate(this.pointX, this.pointY)
+      //   this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
+
+      // this.sGraphics.pop()
     }
 
     else if (keyCode==DOWN_ARROW){
       //pointY +=2;
       this.yDirection = 1
+      this.tAngle = 0
       this.pointY += 2 * this.yDirection
-
       this.pointX = this.pointX - this.circleRadius * cos(this.angle)
+      // lengua
+      // this.sGraphics.push()
+      //   this.sGraphics.strokeWeight(4)
+      //   this.sGraphics.translate(this.pointX, this.pointY)
+      //   this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
+
+      // this.sGraphics.pop()
     }
 
     else if (keyCode==RIGHT_ARROW){
 
       this.xDirection = 1
+      this.tAngle = 3*HALF_PI
       this.pointX += 2 * this.xDirection
-
-      //pointX +=2;
       this.pointY = this.pointY - this.circleRadius * sin(this.angle)
+      // lengua
+      // this.sGraphics.push()
+      //   this.sGraphics.strokeWeight(4)
+      //   this.sGraphics.translate(this.pointX, this.pointY)
+      //   this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
+
+      // this.sGraphics.pop()
     }
     else if (keyCode==LEFT_ARROW){
       this.xDirection = -1
+      this.tAngle = HALF_PI
       this.pointX += 2 * this.xDirection
-
-      //pointX -=2;
       this.pointY = this.pointY - this.circleRadius * sin(this.angle)
+      // lengua
+      // this.sGraphics.push()
+      //   this.sGraphics.strokeWeight(4)
+      //   this.sGraphics.translate(this.pointX, this.pointY)
+      //   this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
+
+      // this.sGraphics.pop()
     }
 
     this.pointX > this.w && (this.pointX = 0)

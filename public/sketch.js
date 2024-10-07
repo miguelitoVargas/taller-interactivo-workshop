@@ -5,8 +5,11 @@ p5.disableFriendlyErrors = true
 let port = 8081
 let socket
 
+let comida
+let numComidas = 0
+
 // capa inicial de fondo
-let fondo, rainforest
+let fondo, currentFondo, currentMascara
 // fondos
 const fondos = []
 const fWidth = 1600
@@ -20,6 +23,9 @@ let serpienteSonido
 
 // graphics
 let cielo, serpiente, sMask
+
+// arbol
+let arbol
 
 function preload () {
   fondo = loadImage('assets/fondo.png')
@@ -60,11 +66,25 @@ function setup() {
 
   sMask = createImage(fWidth, fHeight)
 
+  comida = new Comida(random(width),random(height))
+
+  currentMascara = random(fondos)
+  currentFondo = fondo
+
+  // arbol
+  arbol = new Arbol(width/2, height)
 }
 
 function draw() {
+  let dx = mouseX - pmouseX
+  mouseWindV += dx * mDamp
+  mouseWindV += (0 - mouseWind) * wDamp
+  mouseWindV *= mFriction
+  mouseWind += mouseWindV
+
   if (frameCount%1000 === 0) {
     cielo.generate()
+   // comida.comido()
   }
 
 
@@ -74,23 +94,53 @@ function draw() {
 
 
   // imagenes de fondo
-  image(fondo, 0, 0, width, height)
+  image(currentFondo, 0, 0, width, height)
 
   // serpiente
   serpiente.display()
+  const sxMapped = map(serpiente.pointX, 0, fWidth, 0, width)
+  const syMapped = map(serpiente.pointY, 0, fHeight, 0, height)
+
+  const dComida = dist(sxMapped, syMapped, comida.posX, comida.posY)
+  if (parseInt(dComida) <= 20){
+    //comida.comido()
+    comida.setPos(random(width), random(height))
+    numComidas++
+  }
+
+  if (numComidas === 2) {
+    numComidas = 0
+    comida.setPos(random(width), random(height))
+    //comida.comido()
+    currentFondo = currentMascara
+    currentMascara = random(fondos)
+    serpiente.sGraphics.clear()
+  }
 
 
   // mascara de opacidad
-  sMask.copy(fondos[3], 0, 0, fWidth, fHeight, 0, 0, fWidth, fHeight)
+  sMask.copy(currentMascara, 0, 0, fWidth, fHeight, 0, 0, fWidth, fHeight)
   sMask.mask(serpiente.sGraphics)
   image(sMask, 0, 0, width, height)
 
   // bandada de guacamayas
   birdFlock.display()
 
+  // arbol
+  arbol.display()
+
+  if (comida.isAlive()) {
+    comida.display()
+    image(comida.cGraphics, 0 ,0)
+
+  }
+
+  // image(serpiente.sGraphics, 0, 0, 500, 500)
+
   textSize(50)
   fill(0)
   text("fps = " + round(frameRate()), 50, 50)
+  // text("dComida = " + parseInt(dComida), 50, 150)
 }
 
 function handleOsc (msg) {
