@@ -27,12 +27,21 @@ let cielo, serpiente, sMask
 // arbol
 let arbol
 
+// animaciones
+let gAmarillas
+let pajX = 0
+let pajY = 0
+
+
+
 function preload () {
   fondo = loadImage('assets/fondo.png')
   serpienteSonido = loadSound('assets/serpiente.mp3')
   for (let i = 1; i <= 4; i++) {
     fondos.push(loadImage(`assets/fondo-${i}.png`))
   }
+  // guacamayas amarillas
+  gAmarillas = new Animacion('assets/seq/ga_', 'png', 6)
 }
 
 let sx = 0
@@ -76,11 +85,6 @@ function setup() {
 }
 
 function draw() {
-  let dx = mouseX - pmouseX
-  mouseWindV += dx * mDamp
-  mouseWindV += (0 - mouseWind) * wDamp
-  mouseWindV *= mFriction
-  mouseWind += mouseWindV
 
   if (frameCount%1000 === 0) {
     cielo.generate()
@@ -129,6 +133,10 @@ function draw() {
   // arbol
   arbol.display()
 
+  // animacion guacamayas
+  pajX++
+  gAmarillas.display(pajX, pajY)
+
   if (comida.isAlive()) {
     comida.display()
     image(comida.cGraphics, 0 ,0)
@@ -146,19 +154,32 @@ function draw() {
 function handleOsc (msg) {
   console.log('got message: ', msg)
   if (msg.address === '/plant') {
-    if (!serpienteSonido.isPlaying()) {
-      serpienteSonido.play()
-      // console.log('plaaaaay')
+    // if (!serpienteSonido.isPlaying()) {
+    //   serpienteSonido.play()
+    //   // console.log('plaaaaay')
+    // }
+    serpiente.direccion = msg.args[0]
 
+  } else if (msg.address === '/motion')
+    {
+      pajX = random(width)
+      pajY = random(height)
+      randomize()
+    } else if (msg.address === '/distance') {
+      const val = msg.args[0]
+      if (val > 0 && val < 125) {
+        currentFondo = fondos[0]
+
+      } else if (val > 125 && val < 250) {
+        currentFondo = fondos[1]
+
+
+      } else if (val > 250 && val < 375) {
+
+        currentFondo = fondos[2]
+      } else if (val > 375) {
+
+        currentFondo = fondos[3]
+      }
     }
-  }
-}
-
-function keyPressed () {
-  // console.log(key)
-  if (key === 'p') {
-    // console.log('plaaaaay')
-    serpienteSonido.play()
-  }
-  key === 'f' && (fullscreen(true))
 }

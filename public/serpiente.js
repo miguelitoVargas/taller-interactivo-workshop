@@ -19,6 +19,7 @@ class Serpent {
     this.sGraphics.background(0, 0)
     this.tAngle = 3*HALF_PI
     this.tLength = 0
+    this.direccion = ''
   }
 
   display () {
@@ -49,62 +50,34 @@ class Serpent {
     this.sGraphics.pop()
 
 
-    if (keyCode==UP_ARROW){
+    if (keyCode === UP_ARROW || this.direccion === 'arriba'){
       //pointY -=2;
       this.yDirection = -1
       this.tAngle = PI
       this.pointY += 2 * this.yDirection
       this.pointX = this.pointX + this.circleRadius * cos(this.angle)
-      // lengua
-      // this.sGraphics.push()
-      //   this.sGraphics.strokeWeight(4)
-      //   this.sGraphics.translate(this.pointX, this.pointY)
-      //   this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
-
-      // this.sGraphics.pop()
     }
 
-    else if (keyCode==DOWN_ARROW){
-      //pointY +=2;
-      this.yDirection = 1
-      this.tAngle = 0
-      this.pointY += 2 * this.yDirection
+    else if (keyCode === DOWN_ARROW || this.direccion === 'abajo'){
+      // pointY +=2;
+       this.yDirection = 1
+       this.tAngle = 0
+       this.pointY += 2 * this.yDirection
       this.pointX = this.pointX - this.circleRadius * cos(this.angle)
-      // lengua
-      // this.sGraphics.push()
-      //   this.sGraphics.strokeWeight(4)
-      //   this.sGraphics.translate(this.pointX, this.pointY)
-      //   this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
-
-      // this.sGraphics.pop()
     }
 
-    else if (keyCode==RIGHT_ARROW){
+    else if (keyCode === RIGHT_ARROW || this.direccion === 'derecha'){
 
       this.xDirection = 1
       this.tAngle = 3*HALF_PI
       this.pointX += 2 * this.xDirection
       this.pointY = this.pointY - this.circleRadius * sin(this.angle)
-      // lengua
-      // this.sGraphics.push()
-      //   this.sGraphics.strokeWeight(4)
-      //   this.sGraphics.translate(this.pointX, this.pointY)
-      //   this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
-
-      // this.sGraphics.pop()
     }
-    else if (keyCode==LEFT_ARROW){
+    else if (keyCode === LEFT_ARROW || this.direccion === 'izquierda'){
       this.xDirection = -1
       this.tAngle = HALF_PI
       this.pointX += 2 * this.xDirection
       this.pointY = this.pointY - this.circleRadius * sin(this.angle)
-      // lengua
-      // this.sGraphics.push()
-      //   this.sGraphics.strokeWeight(4)
-      //   this.sGraphics.translate(this.pointX, this.pointY)
-      //   this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
-
-      // this.sGraphics.pop()
     }
 
     this.pointX > this.w && (this.pointX = 0)

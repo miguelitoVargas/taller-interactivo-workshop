@@ -34,7 +34,7 @@ let node;
 
 function reset() {
   //background(bgColor);
-  node = new Node(startLength, startSize, rotRange, 0);
+  // node = new Node(startLength, startSize, rotRange, 0);
 }
 
 function randomize() {
@@ -80,7 +80,7 @@ function displayFPS() {
 function mousePressed() {
   time = 0;
   randomize();
-  reset();
+  // reset();
 }
 
 class Node {
@@ -187,6 +187,12 @@ class Arbol {
     this.node =  new Node(startLength, startSize, rotRange, 0);
   }
   display () {
+    let dx = mouseX - pmouseX
+    mouseWindV += dx * mDamp
+    mouseWindV += (0 - mouseWind) * wDamp
+    mouseWindV *= mFriction
+    mouseWind += mouseWindV
+
     push()
     translate(this.x, this.y)
     this.node.draw()
