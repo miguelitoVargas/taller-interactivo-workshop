@@ -28,14 +28,8 @@ class Serpent {
     // this.sGraphics.frameRate(5)
     this.sGraphics.noStroke()
 
-    this.sGraphics.fill(255)
-    this.sGraphics.stroke(255)
-    // this.sGraphics.push()
-    // this.sGraphics.translate(this.pointX, this.pointY)
-    // this.sGraphics.circle(0, 0, this.sDiameter)
-    // this.sGraphics.pop()
-    this.sGraphics.circle(this.pointX, this.pointY, this.sDiameter)
     this.sGraphics.push()
+      this.sGraphics.stroke('aliceblue')
       // this.sGraphics.strokeWeight(2)
       this.sGraphics.translate(this.pointX, this.pointY)
       // this.sGraphics.line(this.sDiameter/2, 0, this.sDiameter, 0)
@@ -48,6 +42,18 @@ class Serpent {
       this.sGraphics.line(0, 0, -8, 8)
 
     this.sGraphics.pop()
+    this.sGraphics.fill(255)
+    this.sGraphics.stroke(255)
+    // this.sGraphics.push()
+    // this.sGraphics.translate(this.pointX, this.pointY)
+    // this.sGraphics.circle(0, 0, this.sDiameter)
+    // this.sGraphics.pop()
+    this.sGraphics.circle(this.pointX, this.pointY, this.sDiameter)
+    this.sGraphics.noStroke()
+    this.sGraphics.fill("#fcfc57")
+    this.sGraphics.circle(this.pointX + 10, this.pointY + 10, 8)
+    this.sGraphics.circle(this.pointX + 10, this.pointY - 10, 8)
+
 
 
     if (keyCode === UP_ARROW || this.direccion === 'arriba'){

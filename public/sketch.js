@@ -66,9 +66,6 @@ function setup() {
   birdFlock = new BirdFlock()
 
 
-  // instancia y generacion de un cielo
-  cielo = new Cielo()
-  cielo.generate()
 
   // instancia de serpiente
   serpiente = new Serpent(fWidth, fHeight)
@@ -76,10 +73,14 @@ function setup() {
   sMask = createImage(fWidth, fHeight)
 
   comida = new Comida(random(width),random(height))
+  comida.cargar()
 
   currentMascara = random(fondos)
   currentFondo = fondo
 
+  // instancia y generacion de un cielo
+  cielo = new Cielo(serpiente.sGraphics)
+  cielo.generate()
   // arbol
   arbol = new Arbol(width/2, height)
 }
@@ -105,7 +106,7 @@ function draw() {
   const sxMapped = map(serpiente.pointX, 0, fWidth, 0, width)
   const syMapped = map(serpiente.pointY, 0, fHeight, 0, height)
 
-  const dComida = dist(sxMapped, syMapped, comida.posX, comida.posY)
+  const dComida = dist(sxMapped, syMapped, comida.posX + 50, comida.posY + 50)
   if (parseInt(dComida) <= 20){
     //comida.comido()
     comida.setPos(random(width), random(height))
@@ -124,7 +125,9 @@ function draw() {
 
   // mascara de opacidad
   sMask.copy(currentMascara, 0, 0, fWidth, fHeight, 0, 0, fWidth, fHeight)
+  sMask.blend(serpiente.sGraphics, 0, 0, serpiente.sGraphics.width, serpiente.sGraphics.height, 0, 0, sMask.width, sMask.height, MULTIPLY)
   sMask.mask(serpiente.sGraphics)
+  // cielo.blendCielo(serpiente.sGraphics)
   image(sMask, 0, 0, width, height)
 
   // bandada de guacamayas
@@ -182,4 +185,7 @@ function handleOsc (msg) {
         currentFondo = fondos[3]
       }
     }
+}
+function keyPressed () {
+  key === 'f' && fullscreen(true)
 }

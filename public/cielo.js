@@ -1,5 +1,5 @@
 class Cielo {
-  constructor () {
+  constructor (srcImg) {
     this.w = 480
     this.h = 270
     this.zoff = 0
@@ -12,6 +12,7 @@ class Cielo {
       willReadFrequently: true
     })
     this.buffer = createGraphics(this.w, this.h, P2D, gc)
+    this.blendSource = createImage(srcImg.width, srcImg.height)
   }
 
   generate () {
@@ -44,6 +45,29 @@ class Cielo {
 
     }
 
+  }
+
+  blendCielo (src) {
+    // this.blendSource.copy(src)
+    this.blendSource.loadPixels()
+    src.loadPixels()
+    for (let y = 0; y < src.height; y++) {
+      for (let x = 0; x < src.width; x++) {
+        let loc = (x + y * width)*4
+        const r = src.pixels[loc]
+        const g = src.pixels[loc + 1]
+        const b = src.pixels[loc + 2]
+        const a = src.pixels[loc + 3]
+        this.blendSource.pixels[loc] = r
+        this.blendSource.pixels[loc + 1] = g
+        this.blendSource.pixels[loc + 2] = b
+        this.blendSource.pixels[loc + 3] = a
+
+      }
+    }
+    this.blendSource.updatePixels()
+
+    this.buffer.blend(this.blendSource, 0, 0, this.blendSource.width, this.blendSource.height, 0, 0, this.buffer.width, this.buffer.height, DIFFERENCE)
   }
 }
 
