@@ -12,6 +12,7 @@ class Comida{
     this.cGraphics = createGraphics(width,height, P2D, gc)
     this.alimento = []
     this.currentAlimento = null
+    this.follaje = null
 
   }
   cargar () {
@@ -20,11 +21,16 @@ class Comida{
       this.alimento.push(loadImage(`assets/Alimento/c${i}.png`))
     }
     this.currentAlimento = random(this.alimento)
+    this.follaje = loadImage('assets/Alimento/follaje.png')
 
   }
   display(){
     if (this.life) {
+      image(this.follaje, this.posX - 25, this.posY - 25, 150, 150)
+
       image(this.currentAlimento, this.posX, this.posY, 100, 100)
+      // fill('red')
+      // circle(this.posX + 50, this.posY + 50, 20, 20)
       // this.cGraphics.noStroke()
       // this.cGraphics.fill('red')
       // this.cGraphics.circle(this.posX,this.posY, 100)

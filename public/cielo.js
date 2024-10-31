@@ -6,6 +6,8 @@ class Cielo {
     this.yoff = 0
     this.xoff = 0
     this.res = 2
+    this.inc = 0.03
+    this.zinc = 0.06
 
     const gc = document.createElement('canvas')
     gc.getContext('2d', {
@@ -15,8 +17,22 @@ class Cielo {
     this.blendSource = createImage(srcImg.width, srcImg.height)
   }
 
+  changeCielo (type) {
+    if (type === 'normal') {
+      this.res = 2
+      this.inc = 0.03
+      this.zinc = 0.06
+      this.generate()
+    } else {
+      this.res = 6
+      this.inc = 0.3
+      this.zinc = 0.0006
+      this.generate()
+    }
+  }
+
   generate () {
-    let inc = 0.03
+    // let inc = 0.03
 
     // this.buffer.reset()
     // clear()
@@ -37,11 +53,11 @@ class Cielo {
         // this.buffer.fill(220, sat, 100)
         this.buffer.square(x*this.res-this.res/2, y*this.res-this.res/2, this.res)
 
-        this.xoff += inc
+        this.xoff += this.inc
 
       }
-      this.yoff += inc
-      this.zoff += 0.0006
+      this.yoff += this.inc
+      this.zoff += this.zinc
 
     }
 

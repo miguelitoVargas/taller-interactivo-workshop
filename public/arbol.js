@@ -91,7 +91,7 @@ class Node {
     this.rot = radians(random(-_rotRange, _rotRange));
     if (this.level < leafLevel) this.rot *= 0.3;
     if (this.level === 0) this.rot = 0;
-    this.windFactor = random(0.2, 1);
+    this.windFactor = random(0.2, 0.5);
     this.doesBloom = false;
     if (this.level >= leafLevel && random(1) < leafChance) this.doesBloom = true;
     this.bloomSize = random(bloomSizeAverage * 0.7, bloomSizeAverage * 0.8);
@@ -116,7 +116,7 @@ class Node {
     push();
   
     stroke(this.branchColor);
-    let rotOffset = sin(noise(millis() * 0.000006 * (this.level * 1)) * 100);
+    let rotOffset = sin(noise(millis() * 0.000006 * (this.level * 1)) * 25);
     if (!windEnabled) rotOffset = 0;
     rotate(this.rot + (rotOffset * 0.1 + mouseWind) * this.windFactor);
     line(0, 0, 0, -this.len);
@@ -187,15 +187,19 @@ class Arbol {
     this.node =  new Node(startLength, startSize, rotRange, 0);
   }
   display () {
-    let dx = mouseX - pmouseX
-    mouseWindV += dx * mDamp
-    mouseWindV += (0 - mouseWind) * wDamp
-    mouseWindV *= mFriction
-    mouseWind += mouseWindV
+    // let dx = mouseX - pmouseX
+    // mouseWindV += dx * mDamp
+    // mouseWindV += (0 - mouseWind) * wDamp
+    // mouseWindV *= mFriction
+    // mouseWind += mouseWindV
 
     push()
     translate(this.x, this.y)
     this.node.draw()
     pop()
+  }
+  resetArbol () {
+    randomize()
+    this.node =  new Node(startLength, startSize, rotRange, 0);
   }
 }
