@@ -31,11 +31,15 @@ let cielo, serpiente, sMask
 let arbol
 
 // animaciones
-let gAmarillas, gRojas, rana, mariposa, corocoro, ibis, tucanBlanco, tucanCaribe
+let gAmarillas, gRojas, rana, mariposa, corocoro, ibis, tucanBlanco, tucanCaribe,
+turpialMatico, tangaraEncapuchada, martinPescador, ibisVerde, casiqueCandela,
+tangaraSieteColores, bichoFue, tangaraRubicunda, gVerde, barranqueroC, tangaraMulti, barranqueroCoronado
+
 const animaciones = []
 
 
 function preload () {
+  cielo = new Cielo()
   // fondo = loadImage('assets/fondo.png')
   serpienteSonido = loadSound('assets/serpiente.mp3')
   ambiente = loadSound('assets/audio/ambiente.mp3')
@@ -44,7 +48,7 @@ function preload () {
     sonidos.push(loadSound(`assets/audio/s${i}.mp3`))
   }
 
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= 6; i++) {
     fondos.push(loadImage(`assets/fondo-${i}.png`))
   }
 
@@ -82,6 +86,42 @@ function preload () {
 
   tucanCaribe = new Animacion('assets/tucanCaribe/TC_', 'png', 6, 'aereo', 'left')
   animaciones.push(tucanCaribe)
+
+  turpialMatico = new Animacion('assets/TurpialMatico/TM_', 'png', 6, 'aereo', 'right')
+  animaciones.push(turpialMatico)
+
+  tangaraEncapuchada = new Animacion('assets/TangaraEncapuchada/TE_', 'png', 6, 'aereo', 'right')
+  animaciones.push(tangaraEncapuchada)
+
+  martinPescador = new Animacion('assets/MartinPescador/MP_', 'png', 6, 'aereo', 'left')
+  animaciones.push(martinPescador)
+
+  ibisVerde = new Animacion('assets/IbisVerde/IV_', 'png', 6, 'aereo', 'left')
+  animaciones.push(ibisVerde)
+
+  casiqueCandela = new Animacion('assets/CaciqueCandela/CC_', 'png', 6, 'aereo', 'right')
+  animaciones.push(casiqueCandela)
+
+  tangaraSieteColores = new Animacion('assets/TangaraSietecolores/TSC_', 'png', 6, 'aereo', 'right')
+  animaciones.push(tangaraSieteColores)
+
+  bichoFue = new Animacion('assets/Bichofue/BF_', 'png', 6, 'aereo', 'left')
+  animaciones.push(bichoFue)
+
+  tangaraRubicunda = new Animacion('assets/TangaraRubicunda/TR_', 'png', 6, 'aereo', 'left')
+  animaciones.push(tangaraRubicunda)
+
+  gVerde = new Animacion('assets/GuacamayaVerde/GV_', 'png', 6, 'aereo', 'right')
+  animaciones.push(gVerde)
+
+  barranqueroC = new Animacion('assets/BarranqueroPechicastano/BP_', 'png', 6, 'aereo', 'left')
+  animaciones.push(barranqueroC)
+
+  tangaraMulti = new Animacion('assets/TangaraMulticolor/TM_', 'png', 6, 'aereo', 'right')
+  animaciones.push(tangaraMulti)
+
+  barranqueroCoronado = new Animacion('assets/BarranqueroCoronado/BC_', 'png', 6, 'aereo', 'right')
+  animaciones.push(barranqueroCoronado)
 }
 
 let sx = 0
@@ -119,12 +159,12 @@ function setup() {
   comida.cargar()
 
   currentMascara = random(fondosP)
-  currentFondo = random(fondos)
+  currentFondo = random(fondos)// fondos[3]//
   currentMundo = 'normal'
 
   // instancia y generacion de un cielo
-  cielo = new Cielo(serpiente.sGraphics)
-  cielo.generate()
+  // cielo = new Cielo()
+  // cielo.generate()
   // arbol
   arbol = new Arbol(width/2, height)
 }
@@ -132,15 +172,14 @@ function setup() {
 function draw() {
 
   // genera un cielo cada 1k frames
-  if (frameCount%1000 === 0) {
-    cielo.generate()
+  if (frameCount%300 === 0) {
+    cielo.changeCielo(currentMundo)
    // comida.comido()
   }
 
-  // mouseIsPressed && cielo.generate()
 
   // dibuja el cielo
-  image(cielo.buffer, 0, 0, width, height)
+  image(cielo.currentCielo, 0, 0, width, height)
 
 
   // imagenes del fondo actual
@@ -186,8 +225,6 @@ function draw() {
   // dibujamos la imagen de la mascara
   image(sMask, 0, 0, width, height)
 
-  // bandada de guacamayas solo cuando el mundo es el normal
-  // currentMundo === 'normal' && ()
 
   // dibujamos las animaciones actuales
   for (let a of animaciones) {
@@ -257,11 +294,12 @@ function handleOsc (msg) {
 }
 function keyPressed () {
   key === 'f' && fullscreen(true)
-  // key === 'f' && ambiente.loop()
+  key === 'f' && ambiente.loop()
 
   if (key === 'a') {
     const a = random(animaciones)
     a.showAnimacion = true
+    cielo.cieloTime = 10000
     const s = random(sonidos)
     s.play()
   }

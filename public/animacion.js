@@ -5,11 +5,11 @@ class Animacion {
     const w = window.screen.width
     const h = window.screen.height
 
-    // setea la posicion dependiendo de si
+    // setea la posicion dependiendo
     // del tipo de animal
     this.posX = random(w/2)
     this.posY = ({
-      'aereo': random(h - 500),
+      'aereo': random(h - 300),
       'terrestre': random(h - 500, h - 200)
     })[type]
 
