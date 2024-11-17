@@ -21,7 +21,7 @@ const fHeight = 900
 let birdFlock
 
 // sonidos
-let serpienteSonido, ambiente
+let serpienteSonido, ambiente, birds
 const sonidos = []
 
 // graphics
@@ -43,6 +43,7 @@ function preload () {
   // fondo = loadImage('assets/fondo.png')
   serpienteSonido = loadSound('assets/serpiente.mp3')
   ambiente = loadSound('assets/audio/ambiente.mp3')
+  birds = loadSound('assets/audio/Birds.mp3')
 
   for (let i = 1; i <= 4; i++) {
     sonidos.push(loadSound(`assets/audio/s${i}.mp3`))
@@ -52,7 +53,7 @@ function preload () {
     fondos.push(loadImage(`assets/fondo-${i}.png`))
   }
 
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= 4; i++) {
     fondosP.push(loadImage(`assets/FondosPixelArt/Fondo${i}.png`))
   }
 
@@ -293,13 +294,16 @@ function handleOsc (msg) {
     }
 }
 function keyPressed () {
-  key === 'f' && fullscreen(true)
-  key === 'f' && ambiente.loop()
+
+  if (key === 'f') {
+    fullscreen(true)
+    ambiente.loop()
+    birds.loop()
+  }
 
   if (key === 'a') {
     const a = random(animaciones)
     a.showAnimacion = true
-    cielo.cieloTime = 10000
     const s = random(sonidos)
     s.play()
   }
