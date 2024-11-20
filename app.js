@@ -11,6 +11,9 @@ const app = express();
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
+console.log('directorio', __dirname)
+console.log(import.meta.url)
+//
 // servir todos los archivos en el directorio /public
 app.use(express.static('public', { etag: false }))
 

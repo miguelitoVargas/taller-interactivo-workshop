@@ -1,5 +1,15 @@
 // deshabilitar el log de ciertos errores para performance
 p5.disableFriendlyErrors = true
+// puntaje
+let score = 5
+let scoreY
+let timeCheck = 0
+let timeOff = 15
+let timeY = 0
+let gameReady, playingGame, ganador, perdedor, intentaDeNuevo = false
+let gameText = 'Toca las plantas para comenzar'
+
+
 //
 // OSC
 let port = 8081
@@ -133,7 +143,7 @@ function setup() {
   canvas.getContext('2d', {
     willReadFrequently: true
   })
-  createCanvas(displayWidth, displayHeight, canvas)
+  createCanvas(windowWidth, windowHeight, canvas)
   // angleMode(DEGREES)
 
   // creamos y conectamos el ws con el servidor
@@ -172,6 +182,8 @@ function setup() {
 
 function draw() {
 
+  let tiempo = millis() / 1000
+
   // genera un cielo cada 1k frames
   if (frameCount%300 === 0) {
     cielo.changeCielo(currentMundo)
@@ -186,22 +198,33 @@ function draw() {
   // imagenes del fondo actual
   image(currentFondo, 0, 0, width, height)
 
-  // dibuja la serpiente
-  serpiente.display()
-  // mapea X y Y de la serpiente a el ancho y alto
-  const sxMapped = map(serpiente.pointX, 0, fWidth, 0, width)
-  const syMapped = map(serpiente.pointY, 0, fHeight, 0, height)
+  if (gameReady && playingGame) {
+    // dibuja la serpiente
+    serpiente.display()
+    // mapea X y Y de la serpiente a el ancho y alto
+    const sxMapped = map(serpiente.pointX, 0, fWidth, 0, width)
+    const syMapped = map(serpiente.pointY, 0, fHeight, 0, height)
 
-  // mide la distancia entre la comida y la serpiente
-  const dComida = dist(sxMapped, syMapped, comida.posX + 50, comida.posY + 50)
+    // mide la distancia entre la comida y la serpiente
+    const dComida = dist(sxMapped, syMapped, comida.posX + 50, comida.posY + 50)
 
 
-  // si la serpiente esta a 20px de distancia ha comido
-  // dibujamos la comida en otro punto y sumamos la cuenta de comidas
-  if (parseInt(dComida) <= 20){
-    //comida.comido()
-    comida.setPos(random(20, width - 100), random(20, height - 100))
-    numComidas++
+    // si la serpiente esta a 20px de distancia ha comido
+    // dibujamos la comida en otro punto y sumamos la cuenta de comidas
+    if (parseInt(dComida) <= 20){
+      //comida.comido()
+      comida.setPos(random(20, width - 100), random(20, height - 100))
+      numComidas++
+      score++
+    }
+
+    // mascara de opacidad de la serpiente
+    sMask.copy(currentMascara, 0, 0, fWidth, fHeight, 0, 0, fWidth, fHeight)
+    sMask.blend(serpiente.sGraphics, 0, 0, serpiente.sGraphics.width, serpiente.sGraphics.height, 0, 0, sMask.width, sMask.height, MULTIPLY)
+    sMask.mask(serpiente.sGraphics)
+
+    // dibujamos la imagen de la mascara
+    image(sMask, 0, 0, width, height)
   }
 
   // si van 2 comidas cambiamos de mundo
@@ -216,16 +239,6 @@ function draw() {
     serpiente.sGraphics.clear()
     arbol.resetArbol()
   }
-
-
-  // mascara de opacidad de la serpiente
-  sMask.copy(currentMascara, 0, 0, fWidth, fHeight, 0, 0, fWidth, fHeight)
-  sMask.blend(serpiente.sGraphics, 0, 0, serpiente.sGraphics.width, serpiente.sGraphics.height, 0, 0, sMask.width, sMask.height, MULTIPLY)
-  sMask.mask(serpiente.sGraphics)
-
-  // dibujamos la imagen de la mascara
-  image(sMask, 0, 0, width, height)
-
 
   // dibujamos las animaciones actuales
   for (let a of animaciones) {
@@ -254,9 +267,65 @@ function draw() {
 
   // image(serpiente.sGraphics, 0, 0, 500, 500)
 
+  //scoreY +=  //(scoreY + 1) %height
+  // if (scoreY >= height) {
+  //   score++
+
+  // }
+
+  const t = tiempo - timeCheck
+  if (t > timeOff) {
+    timeCheck = tiempo
+    // score++
+
+    if (playingGame) {
+      score--
+      timeOff--
+
+      if (timeOff <= 0) {
+        intentaDeNuevo = true
+        setTimeout(() => {
+         resetGame()
+        }, 5000)
+      }
+      if (score <= 0 && !intentaDeNuevo) {
+        // eres el peor jugador de snake
+        playingGame = false
+        perdedor = true
+        setTimeout(() => {
+         resetGame()
+        }, 5000)
+      } else if (score === 10 && !intentaDeNuevo) {
+        // eres el mejor jugador de snake
+        playingGame = false
+        ganador = true
+        setTimeout(() => {
+         resetGame()
+        }, 5000)
+      }
+    }
+
+  }
+
+  if (playingGame) {
+    timeY = map(t, 0, timeOff, 0, height)
+    gameText = `Puntaje: ${score}`
+  } else {
+    timeY = height / 2
+    gameText = 'Toca las plantas para comenzar'
+  }
+
   textSize(50)
+  textAlign(CENTER)
   fill(0)
-  text("fps = " + round(frameRate()), 50, 50)
+  if (!perdedor && !ganador) {
+    text(gameText, width/2, timeY + timeOff)
+  }
+  ganador && text('Eres el mejor jugador de snake', width / 2, height / 2)
+  perdedor && text('Eres el peor jugador de snake', width / 2, height / 2)
+  intentaDeNuevo && text('Casi lo logras, intentalo de nuevo', width / 2, height / 2)
+  // text("TOFF :  " + t, 200, 100)
+  // text("fps = " + round(frameRate()), 50, 50)
   // text("dComida = " + parseInt(dComida), 50, 150)
 }
 
@@ -267,6 +336,7 @@ function handleOsc (msg) {
     // arriba, abajo, izquierda, derecha
     serpiente.direccion = msg.args[0]
 
+    !playingGame && gameReady && (playingGame = true)
   } else if (msg.address === '/motion')
     {
       // cambiamos el arbol y tomamos una animacion y sonido aleatorios para mostrar
@@ -277,23 +347,35 @@ function handleOsc (msg) {
       s.play()
     } else if (msg.address === '/distance') {
       const val = msg.args[0]
-      if (val > 0 && val < 125) {
-        currentFondo = fondos[0]
-
-      } else if (val > 125 && val < 250) {
-        currentFondo = fondos[1]
-
-
-      } else if (val > 250 && val < 375) {
-
-        currentFondo = fondos[2]
-      } else if (val > 375) {
-
-        currentFondo = fondos[3]
+      if (val <= 125) {
+        !gameReady && (gameReady = true)
+      } else {
+        if (gameReady) {
+          resetGame()
+        }
       }
+      // if (val > 0 && val < 125) {
+      //   currentFondo = fondos[0]
+
+      // } else if (val > 125 && val < 250) {
+      //   currentFondo = fondos[1]
+
+
+      // } else if (val > 250 && val < 375) {
+
+      //   currentFondo = fondos[2]
+      // } else if (val > 375) {
+
+      //   currentFondo = fondos[3]
+      // }
     }
 }
 function keyPressed () {
+
+  if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === RIGHT_ARROW || keyCode === LEFT_ARROW) {
+
+    !playingGame && gameReady && (playingGame = true)
+  }
 
   if (key === 'f') {
     fullscreen(true)
@@ -305,7 +387,18 @@ function keyPressed () {
     const a = random(animaciones)
     a.showAnimacion = true
     const s = random(sonidos)
-    s.play()
+    !s.isPlaying() && s.play()
   }
 }
 
+function resetGame () {
+  playingGame = false
+  gameReady = false
+  timeOff = 15
+  perdedor = false
+  ganador = false
+  intentaDeNuevo = false
+  gameText = 'Toca las plantas para comenzar'
+  score = 5
+  serpiente.sGraphics.clear()
+}
