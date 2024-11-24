@@ -1,12 +1,13 @@
 // deshabilitar el log de ciertos errores para performance
 p5.disableFriendlyErrors = true
+
 // puntaje
-let score = 5
-let scoreY
+let score = 0
+let highScore = 0
 let timeCheck = 0
-let timeOff = 15
+let timeOff = 120
 let timeY = 0
-let gameReady, playingGame, ganador, perdedor, intentaDeNuevo = false
+let playingGame = false
 let gameText = 'Toca las plantas para comenzar'
 
 
@@ -135,7 +136,6 @@ function preload () {
   animaciones.push(barranqueroCoronado)
 }
 
-let sx = 0
 function setup() {
 
   // createCanvas(1600, 900, WEBGL)
@@ -143,7 +143,7 @@ function setup() {
   canvas.getContext('2d', {
     willReadFrequently: true
   })
-  createCanvas(windowWidth, windowHeight, canvas)
+  createCanvas(displayWidth, displayHeight, canvas)
   // angleMode(DEGREES)
 
   // creamos y conectamos el ws con el servidor
@@ -173,15 +173,13 @@ function setup() {
   currentFondo = random(fondos)// fondos[3]//
   currentMundo = 'normal'
 
-  // instancia y generacion de un cielo
-  // cielo = new Cielo()
-  // cielo.generate()
-  // arbol
   arbol = new Arbol(width/2, height)
 }
 
 function draw() {
 
+  // tomamos el tiempo de ejecucion de la app en segundos
+  // para constar en el sistema de puntaje
   let tiempo = millis() / 1000
 
   // genera un cielo cada 1k frames
@@ -197,8 +195,7 @@ function draw() {
 
   // imagenes del fondo actual
   image(currentFondo, 0, 0, width, height)
-
-  if (gameReady && playingGame) {
+  if (playingGame) {
     // dibuja la serpiente
     serpiente.display()
     // mapea X y Y de la serpiente a el ancho y alto
@@ -259,51 +256,13 @@ function draw() {
   comida.display()
   image(comida.cGraphics, 0 ,0)
 
-  // animacion guacamayas
-  // gAmarillas.display()
-  // gRojas.display()
-  // image(gAmarillas.aGraphics, 0, 0)
-
-
-  // image(serpiente.sGraphics, 0, 0, 500, 500)
-
-  //scoreY +=  //(scoreY + 1) %height
-  // if (scoreY >= height) {
-  //   score++
-
-  // }
-
   const t = tiempo - timeCheck
   if (t > timeOff) {
     timeCheck = tiempo
-    // score++
 
-    if (playingGame) {
-      score--
-      timeOff--
+    highScore < score && (highScore = score)
 
-      if (timeOff <= 0) {
-        intentaDeNuevo = true
-        setTimeout(() => {
-         resetGame()
-        }, 5000)
-      }
-      if (score <= 0 && !intentaDeNuevo) {
-        // eres el peor jugador de snake
-        playingGame = false
-        perdedor = true
-        setTimeout(() => {
-         resetGame()
-        }, 5000)
-      } else if (score === 10 && !intentaDeNuevo) {
-        // eres el mejor jugador de snake
-        playingGame = false
-        ganador = true
-        setTimeout(() => {
-         resetGame()
-        }, 5000)
-      }
-    }
+    resetGame()
 
   }
 
@@ -317,16 +276,12 @@ function draw() {
 
   textSize(50)
   textAlign(CENTER)
-  fill(0)
-  if (!perdedor && !ganador) {
-    text(gameText, width/2, timeY + timeOff)
-  }
-  ganador && text('Eres el mejor jugador de snake', width / 2, height / 2)
-  perdedor && text('Eres el peor jugador de snake', width / 2, height / 2)
-  intentaDeNuevo && text('Casi lo logras, intentalo de nuevo', width / 2, height / 2)
-  // text("TOFF :  " + t, 200, 100)
-  // text("fps = " + round(frameRate()), 50, 50)
-  // text("dComida = " + parseInt(dComida), 50, 150)
+  // fill(0)
+  fill('white')
+  text(gameText, width/2, timeY)
+  textAlign(LEFT)
+  text(`Puntaje mas alto: ${highScore}`, 50, 50)
+
 }
 
 function handleOsc (msg) {
@@ -336,45 +291,26 @@ function handleOsc (msg) {
     // arriba, abajo, izquierda, derecha
     serpiente.direccion = msg.args[0]
 
-    !playingGame && gameReady && (playingGame = true)
+    //iniciamos el juego si nadie esta jugando
+    !playingGame (playingGame = true)
   } else if (msg.address === '/motion')
-    {
-      // cambiamos el arbol y tomamos una animacion y sonido aleatorios para mostrar
-      randomize()
-      const a = random(animaciones)
-      a.showAnimacion = true
-      const s = random(sonidos)
-      s.play()
-    } else if (msg.address === '/distance') {
-      const val = msg.args[0]
-      if (val <= 125) {
-        !gameReady && (gameReady = true)
-      } else {
-        if (gameReady) {
-          resetGame()
-        }
-      }
-      // if (val > 0 && val < 125) {
-      //   currentFondo = fondos[0]
 
-      // } else if (val > 125 && val < 250) {
-      //   currentFondo = fondos[1]
+  {
+    // cambiamos el arbol y tomamos una animacion y sonido aleatorios para mostrar
+    randomize()
+    const a = random(animaciones)
+    !a.showAnimacion &&  (a.showAnimacion = true)
 
-
-      // } else if (val > 250 && val < 375) {
-
-      //   currentFondo = fondos[2]
-      // } else if (val > 375) {
-
-      //   currentFondo = fondos[3]
-      // }
-    }
+    const s = random(sonidos)
+    !s.isPlaying() && s.play()
+  }
 }
+
 function keyPressed () {
 
   if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === RIGHT_ARROW || keyCode === LEFT_ARROW) {
 
-    !playingGame && gameReady && (playingGame = true)
+    !playingGame && (playingGame = true)
   }
 
   if (key === 'f') {
@@ -385,7 +321,8 @@ function keyPressed () {
 
   if (key === 'a') {
     const a = random(animaciones)
-    a.showAnimacion = true
+    !a.showAnimacion &&  (a.showAnimacion = true)
+
     const s = random(sonidos)
     !s.isPlaying() && s.play()
   }
@@ -393,12 +330,7 @@ function keyPressed () {
 
 function resetGame () {
   playingGame = false
-  gameReady = false
-  timeOff = 15
-  perdedor = false
-  ganador = false
-  intentaDeNuevo = false
   gameText = 'Toca las plantas para comenzar'
-  score = 5
+  score = 0
   serpiente.sGraphics.clear()
 }

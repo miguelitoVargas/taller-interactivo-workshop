@@ -9,8 +9,8 @@ class Animacion {
     // del tipo de animal
     this.posX = random(w/2)
     this.posY = ({
-      'aereo': random(h - 300),
-      'terrestre': random(h - 500, h - 200)
+      'aereo': random(h - 500),
+      'terrestre': random(h - 300, h - 100)
     })[type]
 
     // estado visible de la animacion
