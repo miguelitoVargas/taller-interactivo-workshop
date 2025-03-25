@@ -1,10 +1,7 @@
-Instalacion Selva
+Instalaciones interactivas realizadas en curso de interaccion con p5js
 
-Instalacion realizada con p5js
+Cada rama es una instalacion para instalar:
 
-proceso final de curso de interaccion
-
-Instalar:
-* clonar o descargar .zip
+* clonar la rama o descargar .zip
 * npm install
 * npm run app
