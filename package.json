@@ -1,0 +1,30 @@
+{
+  "name": "diente-leon",
+  "version": "1.0.0",
+  "description": "Instalaciones interactivas realizadas en curso de interaccion con p5js",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "app": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miguelitoVargas/taller-interactivo-workshop.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/miguelitoVargas/taller-interactivo-workshop/issues"
+  },
+  "homepage": "https://github.com/miguelitoVargas/taller-interactivo-workshop#readme",
+  "dependencies": {
+    "express": "^4.21.2",
+    "nodemon": "^3.1.9",
+    "osc": "^2.4.5",
+    "p5": "^1.11.3",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "@types/p5": "^1.7.6"
+  }
+}
