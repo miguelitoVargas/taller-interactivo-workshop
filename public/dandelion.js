@@ -15,18 +15,21 @@ class Dandelion {
 
     // constants for the shape of the dandelion
     this.receptacleRadius = 15
-    this.receptacleLocation = { x: width/2, y: 240 }
-    this.stemLocation = { x: width/2, y: 650 }
-    this.stemControlA = { x: 3*width/2, y: 0 }
-    this.stemControlB = { x: width/2 - 100, y: 800 }
+    this.receptacleLocation = { x: width/2, y: height * 0.4 }
+    this.stemLocation = { x: width/2, y: height - 200 }
+    this.stemControlA = { x: width * 0.85, y: 0 }
+    this.stemControlB = { x: width/2, y: height - 100 }
 
     // popula las semillas
     for (let i = 0; i < seedCount ; i++) {
       this.seeds.push(new Seed(this.receptacleLocation, this.receptacleRadius))
     }
+    // this.populateSeeds()
 
     // this.seeds.push(new Seed(receptacleLocation, receptacleRadius))
     this.seedCallback = seedCallback
+    this.seedCount = seedCount
+    this.isPopulatingSeeds = false
 
     this.blowing = false
   }
@@ -36,7 +39,9 @@ class Dandelion {
     noFill()
     strokeWeight(5)
     const c = color('#1d330c')
-    stroke(c, 195)
+    stroke('green')
+    // fill(c)
+    // stroke('red')
     curve(
       this.stemControlA.x,
       this.stemControlA.y,
@@ -72,7 +77,7 @@ class Dandelion {
             // seed.applyForce(curr)
 
           } else {
-            const windF = createVector(random(-0.2, 0.2) * noise(seed.mass + frameCount * 0.1), random(-2, 0.2))
+            const windF = createVector(random(-0.1, 0.1) * noise(seed.mass + frameCount * 0.1), random(-2, 0.2))
             // const windF = createVector(5 + noise(seed.mass + frameCount * 0.1), random(-2, 0.1 ))
 
             // windF.mult(2)
@@ -95,9 +100,10 @@ class Dandelion {
         // console.log('update', seed.vel)
         let weight = p5.Vector.mult(grav, seed.mass)
         // weight.limit(1)
+
         seed.applyForce(weight)
-        seed.drag(0.4)
-        const windF = createVector(random(-0.2, 0.2) * noise(seed.mass + frameCount * 0.001))
+        seed.drag(0.2)
+        const windF = createVector(random(-0.3, 0.3) * noise(seed.mass + frameCount * 0.001))
 
         windF.mult(5)
         seed.applyForce(windF)
@@ -110,23 +116,45 @@ class Dandelion {
         seed.applyForce(curr)
         // seed.applyForce(curr)
 
-        if (seed.pos.y >= height) {
+        if (seed.pos.x > width || seed.pos.x < 0) {
+          seed.life = false
+          this.seeds = this.seeds.filter(s => s.life)
+        }
+
+        if (seed.pos.y >= seed.bloom) {
           // console.log('yes', seed.pos)
-          if (seed.life) {
+          if (seed.life && (seed.pos.x > 0 && seed.pos.x < width)) {
             const p = seed.pos.copy()
             // p.mult(0)
-            this.seedCallback(p.x)
-            seed.life = false
-
-            this.seeds = this.seeds.filter(s => s.life)
-
+            this.seedCallback(p.x, p.y)
           }
+
+          seed.life = false
+          this.seeds = this.seeds.filter(s => s.life)
         }
       }
       seed.update()
       seed.show()
     }
 
+    // si ya no hay semillas esperar 20sgs
+    // para popular el diente de leon
+    // if (!this.seeds.find(s => !s.free) && !this.isPopulatingSeeds) {
+    if (this.seeds.length < 10 && !this.isPopulatingSeeds) {
+      this.isPopulatingSeeds = true
+      setTimeout(() => {
+        console.log('populando diente de leon')
+        this.populateSeeds()
+        this.isPopulatingSeeds = false
+      }, 1000)
+    }
+  }
+
+  populateSeeds () {
+    // popula las semillas
+    for (let i = 0; i < this.seedCount ; i++) {
+      this.seeds.push(new Seed(this.receptacleLocation, this.receptacleRadius))
+    }
   }
 }
 
@@ -141,17 +169,18 @@ class Seed {
     this.life = true
     this.mass = random(1, 4)
     this.qtyFluff = random(15, 20)
-    this.stemLength = random(20, 60)
+    this.stemLength = random(20, 40)
     this.pos = createVector(origin.x + random(-originVariance, originVariance) / 2,origin.y + random(-originVariance, originVariance) / 2,)
     // this.origin = {
     //   x: origin.x + random(-originVariance, originVariance) / 2,
     //   y: origin.y + random(-originVariance, originVariance) / 2,
     // }
-    this.fluffWidth = 20
+    this.fluffWidth = 10
     this.fluffHeight = 10
 
     this.vel = createVector()
     this.acc = createVector()
+    this.bloom = random(height - 300, height)
   }
 
   applyForce (force) {
@@ -225,17 +254,22 @@ class Seed {
 
     //calc draw location parametrically
     //base
-    fill(255, 245, 147,40)
-    stroke(255, 245, 147,40)
-    rectMode(CENTER)
+    // fill(255, 245, 147,40)
+    // stroke(255, 245, 147,40)
+    strokeWeight(2)
+    fill(0, 30)
+    stroke(0, 30)
+    ellipseMode(CENTER)
     ellipse(0, 5, 2, 10)
 
     //stem
     strokeWeight(1)
-    stroke(255, 245, 147,60)
+    // stroke(255, 245, 147)
+    stroke(0, 40)
     line(0, 0, 0, this.stemLength)
     //fluff
-    stroke(255, 245, 147,60)
+    stroke(255, 200)
+    // stroke(255, 245, 147,60)
     for (let i = 0; i < this.qtyFluff; i++) {
       let theta = (2 * Math.PI * i) / this.qtyFluff
       let fluffLength = map(
