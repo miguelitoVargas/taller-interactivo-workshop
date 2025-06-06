@@ -1,5 +1,5 @@
 // deshabilitar el log de ciertos errores para performance
-p5.disableFriendlyErrors = true
+// p5.disableFriendlyErrors = true
 // OSC
 let port = 8081
 let socket
@@ -7,6 +7,21 @@ let socket
 
 // Dandelion
 let dandelion
+let dColors = {}
+// const dColors = {
+//   desert: {
+//     stem: color(136, 91, 37),
+//     fluff: color(245, 249, 220)
+//   },
+//   medium: {
+//     stem: color(188, 182, 126),
+//     fluff: color(241, 244, 230)
+//   },
+//   landscape: {
+//     stem: color(120, 170, 55),
+//     fluff: color(204, 221, 221)
+//   }
+// }
 
 let plants = []
 
@@ -18,7 +33,7 @@ let wind = 0
 let desert
 let landscape
 let mediumDesert
-// desert || landscape || medium
+// desert || landscape || mediumDesert
 let currentEcoState = 'desert'
 
 // plant max | min in each state
@@ -31,6 +46,8 @@ const numberOfSeeds = 60
 let hongoVid
 
 let isPlaying = false
+
+let sample
 
 // 240:320
 const videoSizes = {
@@ -65,12 +82,27 @@ function preload () {
   desert = loadImage('assets/deforest.jpg')
   landscape = loadImage('assets/landscape.png')
   mediumDesert = loadImage('assets/deforestMedium.png')
+  sample = loadSound('assets/music.mp3')
 }
 
 function setup() {
   // createCanvas(displayWidth, displayHeight)
   createCanvas(windowWidth, windowHeight)
 
+  dColors = {
+    desert: {
+      stem: color(136, 91, 37),
+      fluff: color(245, 249, 220, 200)
+    },
+    mediumDesert: {
+      stem: color(188, 182, 126),
+      fluff: color(241, 244, 230, 200)
+    },
+    landscape: {
+      stem: color(120, 170, 55),
+      fluff: color(204, 221, 221, 200)
+    }
+  }
   backGr = createGraphics(width, height)
 
   // hongoVid = createVideo('assets/hongo2.webm')
@@ -88,6 +120,15 @@ function setup() {
 }
 
 function draw() {
+
+  if (plants.length <= desertPMax) {
+    currentEcoState = 'desert'
+  } else if (plants.length > desertPMax && plants.length <= mediumDesertPMax) {
+    currentEcoState = 'mediumDesert'
+  } else if (plants.length > landscapePMin) {
+    currentEcoState = 'landscape'
+  }
+
   backGr.push()
   if (plants.length <= desertPMax) {
     // currentEcoState = 'desert'
@@ -126,13 +167,6 @@ function draw() {
     image(p.plantGr, p.px, p.py - p.plant.height)
   }
 
-  if (plants.length <= desertPMax) {
-    currentEcoState = 'desert'
-  } else if (plants.length > desertPMax && plants.length <= mediumDesertPMax) {
-    currentEcoState = 'mediumDesert'
-  } else if (plants.length > landscapePMin) {
-    currentEcoState = 'landscape'
-  }
 }
 
 function handleOsc (msg) {
@@ -140,7 +174,7 @@ function handleOsc (msg) {
 
   if (msg.address === '/mic') {
     const b = msg.args[0]
-    const mWind =map(b, 0, 170, -20, 60)
+    const mWind =map(b, 0, 200, -20, 60)
     // console.log('wind', mWind, b)
     wind = mWind
 
@@ -160,17 +194,19 @@ function handleOsc (msg) {
 }
 
 function mousePressed () {
-  const f = random(10, 60)
-  wind = 60
+  // const f = random(10, 60)
+  // wind = 60
+  !sample.isLooping() &&  sample.loop()
   // console.log('seed count', dandelion.seeds.length, 'plants', plants.length )
-  setTimeout(() => {
-    wind = 0
+  // setTimeout(() => {
+  //   wind = 0
 
-  }, 1000)
+  // }, 1000)
 }
 
 function keyPressed () {
   key === 'f' && (fullscreen(true))
+  // key === 'p' && (sample.play())
 }
 
 function seedHandler (px, py) {
@@ -197,6 +233,14 @@ function seedHandler (px, py) {
   }
   // console.log('will hatch', willGrow, plantTimes[currentEcoState])
   willGrow && plants.push(new Plant(px, py, plantTimes[currentEcoState], random(videoTypes)))
+
+  if (plants.length <= desertPMax) {
+    currentEcoState = 'desert'
+  } else if (plants.length > desertPMax && plants.length <= mediumDesertPMax) {
+    currentEcoState = 'mediumDesert'
+  } else if (plants.length > landscapePMin) {
+    currentEcoState = 'landscape'
+  }
 }
 
 class Plant {
@@ -214,7 +258,7 @@ class Plant {
     const vidSize = sizes[floor(random(Object.keys(sizes).length - 0.3))]
     // console.log('size', vidSize)
     // const vidSize = videoSizes[floor(random(Object.keys(videoSizes).length - 1))]
-    console.log(vidSize, type)
+    // console.log(vidSize, type)
     const videos = {
       plantVideos:['assets/Arbusto-1.webm', 'assets/Arbusto-2.webm', 'assets/Arbusto-3.webm'],
       flowerVideos: ['assets/hongo2.webm', 'assets/lavanda.webm', 'assets/ruda.webm', 'assets/lantana.webm']

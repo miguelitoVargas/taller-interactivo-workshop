@@ -38,8 +38,9 @@ class Dandelion {
     //stem
     noFill()
     strokeWeight(5)
-    const c = color('#1d330c')
-    stroke('green')
+    // const c = color('#1d330c')
+    const c = dColors[currentEcoState].stem
+    stroke(c)
     // fill(c)
     // stroke('red')
     curve(
@@ -143,7 +144,7 @@ class Dandelion {
     if (this.seeds.length < 10 && !this.isPopulatingSeeds) {
       this.isPopulatingSeeds = true
       setTimeout(() => {
-        console.log('populando diente de leon')
+        // console.log('populando diente de leon')
         this.populateSeeds()
         this.isPopulatingSeeds = false
       }, 1000)
@@ -181,6 +182,8 @@ class Seed {
     this.vel = createVector()
     this.acc = createVector()
     this.bloom = random(height - 300, height)
+    // console.log('hola')
+    // console.log('ow', dColors, currentEcoState)
   }
 
   applyForce (force) {
@@ -268,7 +271,9 @@ class Seed {
     stroke(0, 40)
     line(0, 0, 0, this.stemLength)
     //fluff
-    stroke(255, 200)
+    const c = dColors[currentEcoState].fluff
+    stroke(c)
+    // stroke(255, 200)
     // stroke(255, 245, 147,60)
     for (let i = 0; i < this.qtyFluff; i++) {
       let theta = (2 * Math.PI * i) / this.qtyFluff
