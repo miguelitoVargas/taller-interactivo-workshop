@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- <link rel="icon" href="/favicon.ico"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecoxfera</title>
+  </head>
+  <body>
+    <script type="module" src="/src/main.ts"></script>
+    <script type="module">
+      import { createApp } from './petiteVue.js'
+      createApp({
+        loaded: false,
+        temperature: '',
+        humidity: '',
+        soilHum: '',
+        readingsPoll: null,
+        async getReadings () {
+          console.log('getting readings')
+          const result = await fetch('/deviceReadings')
+          console.log(result)
+          if (result.status === 200) {
+            const resBlob = await result.blob()
+            const payload = await resBlob.text()
+            const payloadArray = payload.split(',')
+            console.log('readings....', payload)
+            this.temperature = payloadArray[1]
+            this.humidity = payloadArray[0]
+            this.soilHum = payloadArray[2]
+
+            !this.loaded && (this.loaded = true)
+          }
+        },
+        get getTemp () {
+          return this.temperature || 'N/A'
+        },
+        get getHum () {
+          return this.humidity || 'N/A'
+        },
+        get getSoil () {
+          return this.soilHum || 'N/A'
+        },
+        async mounted () {
+          this.readingsPoll = setInterval(this.getReadings, 10000)
+          try {
+            await this.getReadings()
+          } catch (e) {
+            console.log('something went wrong getting readings!')
+          }
+          console.log('mounted!')
+        },
+        unmounted () {
+          clearInterval(this.readingsPoll)
+          this.readingsPoll = null
+        }
+      }).mount()
+    </script>
+    <div v-scope @vue:mounted="mounted" @vue:unmounted="unmounted">
+      <h1 style="text-align: center; margin-top: 20px;">Ecoxfera</h1>
+      <div style="padding: 16px;">
+        <div v-if="loaded" class="data-container">
+          <h3>Temperatura:</h3>
+          <span style="margin-left: 12px;">{{ getTemp }}&deg;</span>
+          <h3>Humedad :</h3>
+          <span style="margin-left: 12px;">{{ getHum }}&#37;</span>
+          <h3>Humedad suelo :</h3>
+          <span style="margin-left: 12px;">{{ getSoil }}hs</span>
+        </div>
+        <h2 v-else style="text-align: center;">Cargando lecturas......</h2>
+        <!-- <div class="data-container"> -->
+        <!--   <h2>Humedad :</h2> -->
+        <!--   <span>50&#37;</span> -->
+        <!-- </div> -->
+        <!-- <div class="data-container"> -->
+        <!--   <h2>Humedad suelo :</h2> -->
+        <!--   <span>50hs</span> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </body>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      position: relative;
+      font-weight: normal;
+    }
+    #app {
+      max-width: 700px;
+      padding: 0;
+      margin: 0 auto;
+      font-weight: normal;
+    }
+    .data-container {
+      width: 70%;
+      display: grid;
+      justify-self: start;
+      grid-template-columns: 50% 40%;
+      align-items: center;
+    }
+  </style>
+</html>
