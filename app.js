@@ -21,6 +21,7 @@ app.use(express.static('public', { etag: false }))
 // servir assets
 app.use('/p5', express.static(__dirname + '/node_modules/p5/lib/'))
 app.use('/osc', express.static(__dirname + '/node_modules/osc/dist/'))
+app.use('/t-model', express.static(__dirname + '/model.json'))
 
 // OSC
 

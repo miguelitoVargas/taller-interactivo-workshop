@@ -3,205 +3,98 @@
 // OSC
 let port = 8081
 let socket
+let capture
+let bodyPose
+let poses = []
+let skeletons = []
 
+const vidScale = 3
+let W = 5;
+let R = 2;
+let grid
 
-// Dandelion
-let dandelion
-let dColors = {}
-// const dColors = {
-//   desert: {
-//     stem: color(136, 91, 37),
-//     fluff: color(245, 249, 220)
-//   },
-//   medium: {
-//     stem: color(188, 182, 126),
-//     fluff: color(241, 244, 230)
-//   },
-//   landscape: {
-//     stem: color(120, 170, 55),
-//     fluff: color(204, 221, 221)
-//   }
-// }
-
-let plants = []
-
-// dandelion vars
-let blowing = false
-let wind = 0
-
-// backgrounds
-let desert
-let landscape
-let mediumDesert
-// desert || landscape || mediumDesert
-let currentEcoState = 'desert'
-
-// plant max | min in each state
-const desertPMax = 5
-const mediumDesertPMax = 10
-const landscapePMin = 5
-
-const numberOfSeeds = 60
-// videos
-let hongoVid
-
-let isPlaying = false
-
-let sample
-
-// 240:320
-const videoSizes = {
-  flowerVideos:  {
-    0: [120, 160],
-    1: [240, 320],
-    2: [80, 107],
-    3: [60, 80],
-    4: [30, 40],
-  },
-  plantVideos: {
-    0: [120, 160],
-    1: [240, 320],
-    2: [80, 107],
-    3: [480, 640],
-  }
-}
-
-const videoTypes = ['flowerVideos', 'plantVideos']
-// const videoSizes = {
-//   0: [120, 160],
-//   1: [240, 320],
-//   2: [80, 107],
-//   3: [60, 80],
-//   4: [30, 40],
-// }
-
-// fondos
-let backGr
-
+let scrWidth = 1920 / vidScale;
+let scrHeight = 1080 / vidScale;
+// https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection
 function preload () {
-  desert = loadImage('assets/deforest.jpg')
-  landscape = loadImage('assets/landscape.png')
-  mediumDesert = loadImage('assets/deforestMedium.png')
-  sample = loadSound('assets/music.mp3')
+// let options = { maxFaces: 1, refineLandmarks: false, flipped: false };
+  //
+  // bodyPose
+  bodyPose = ml5.bodyPose('MoveNet', {
+    modelUrl: '/t-model',
+    flipHorizontal: true
+  })
+ // bodyPose = ml5.faceMesh(options);
+
+
 }
 
-function setup() {
+async function setup() {
   // createCanvas(displayWidth, displayHeight)
-  createCanvas(windowWidth, windowHeight)
+  createCanvas(1920, 1080)
 
-  dColors = {
-    desert: {
-      stem: color(136, 91, 37),
-      fluff: color(245, 249, 220, 200)
-    },
-    mediumDesert: {
-      stem: color(188, 182, 126),
-      fluff: color(241, 244, 230, 200)
-    },
-    landscape: {
-      stem: color(120, 170, 55),
-      fluff: color(204, 221, 221, 200)
-    }
-  }
-  backGr = createGraphics(width, height)
-
-  // hongoVid = createVideo('assets/hongo2.webm')
-  // hongoVid.hide()
-  // hongoVid.stop()
-
-  // console.log(hongoVid)
-  dandelion = new Dandelion(numberOfSeeds, seedHandler)
 
   socket = new osc.WebSocketPort({
     url: 'ws://localhost:' + port
   })
   socket.on('message', handleOsc)
   socket.open()
+  grid = new Grid(parseInt(scrWidth / W), parseInt(scrHeight / W));
+
+  // capture
+  await navigator.mediaDevices.getUserMedia({ video: true })
+
+  const devices = await navigator.mediaDevices.enumerateDevices()
+  const videoDevices = devices.filter(d => d.kind === 'videoinput')
+  console.log(videoDevices)
+  const sense = videoDevices.find(d => !!d.label.match('RGB Module RGB'))
+
+  const device = !!sense ? sense : videoDevices[0]
+  console.log(device)
+  capture = createCapture({
+    video: {
+      deviceId: { exact: device.deviceId }
+    },
+    audio: false
+  }, () => {
+    console.log('camera ready!')
+  })
+  capture.size(width/vidScale, height/vidScale)
+  capture.hide()
+  bodyPose.detectStart(capture, gotPoses)
+  // skeletons = bodyPose.getSkeleton()
+  // console.log('feck', capture)
 }
 
 function draw() {
+  background(0)
+  if (!capture) return
 
-  if (plants.length <= desertPMax) {
-    currentEcoState = 'desert'
-  } else if (plants.length > desertPMax && plants.length <= mediumDesertPMax) {
-    currentEcoState = 'mediumDesert'
-  } else if (plants.length > landscapePMin) {
-    currentEcoState = 'landscape'
-  }
+  // image(capture, 0, 0, width, height)
+  // console.log('fecka', capture)
+  // for (const pose of poses) {
+  //   const { box, left_ear } = pose
+  //   stroke('red')
+  //   noFill()
+  //   strokeWeight(5)
+    
+  //   point(box.xMin * vidScale, box.yMin * vidScale)
+  //   rect(box.xMin * vidScale, box.yMin * vidScale, vidScale * (box.xMax - box.xMin), vidScale * (box.yMax - box.yMin))
+  //   point(left_ear.x * vidScale, left_ear.y * vidScale)
+  // }
 
-  backGr.push()
-  if (plants.length <= desertPMax) {
-    // currentEcoState = 'desert'
-    backGr.tint(255, map(plants.length, 0, desertPMax, 100, 0))
-    backGr.image(desert, 0, 0, width, height)
-
-    backGr.tint(255, map(plants.length, 0, desertPMax, 0, 100))
-    backGr.image(mediumDesert, 0, 0, width, height)
-  } else if (plants.length > desertPMax && plants.length <= mediumDesertPMax) {
-    // currentEcoState = 'mediumDesert'
-    backGr.tint(255, map(plants.length, desertPMax, mediumDesertPMax, 100, 0))
-    backGr.image(mediumDesert, 0, 0, width, height)
-    backGr.tint(255, map(plants.length, desertPMax, mediumDesertPMax, 0, 100))
-    backGr.image(landscape, 0, 0, width, height)
-
-  } else if (plants.length > landscapePMin) {
-    // currentEcoState = 'landscape'
-    // tint(255, map(plants.length, 80, 120, 0, 100))
-    backGr.image(landscape, 0, 0, width, height)
-
-  }
-  backGr.pop()
-  image(backGr, 0, 0)
-
-
-  dandelion.show()
-  strokeWeight(1)
-
-  if (plants.length) {
-    plants = plants.filter(p => !p.isDead)
-  }
-
-  for (const p of plants) {
-    p.update()
-    p.show()
-    image(p.plantGr, p.px, p.py - p.plant.height)
-  }
+  grid.tick(poses);
+  grid.draw();
 
 }
 
 function handleOsc (msg) {
   // print(msg)
 
-  if (msg.address === '/mic') {
-    const b = msg.args[0]
-    const mWind =map(b, 0, 200, -20, 60)
-    // console.log('wind', mWind, b)
-    wind = mWind
-
-    if (mWind >= 6) {
-      blowing = true
-      // wind = map(b, 50, 130, 10, 60)
-    } else {
-      blowing = false
-      // wind = map(b, 0, 50, 0, 9)
-      // console.log('oe', b, wind)
-    }
-
-    // wind = 0
-    // blowing = false
-
-  }
 }
 
 function mousePressed () {
-  // const f = random(10, 60)
-  // wind = 60
-  !sample.isLooping() &&  sample.loop()
-  // console.log('seed count', dandelion.seeds.length, 'plants', plants.length )
-  // setTimeout(() => {
-  //   wind = 0
-
-  // }, 1000)
+  console.log('poses', poses, 'skel', skeletons)
 }
 
 function keyPressed () {
@@ -209,105 +102,107 @@ function keyPressed () {
   // key === 'p' && (sample.play())
 }
 
-function seedHandler (px, py) {
-  // console.log(px)
-  // probabilidad de nacer dependiendo
-  // del estado del ecosistema
-  const prob = Math.random()
-  // const willGrow = currentEcoState === 'desert' ? prob <= 0.2 : prob <= 0.8
-  let willGrow = false
+function gotPoses (results) {
+  // console.log('got some bodies', results)
+  poses = results
+}
 
-  if (currentEcoState === 'desert') {
-    willGrow = prob <= 0.2
-
-  } else if (currentEcoState === 'mediumDesert') {
-    willGrow = prob <= 0.4
-  } else if (currentEcoState === 'landscape') {
-    willGrow = prob <= 0.7 //true
+class Particle {
+  constructor(x, y) {
+    this.pos = createVector(x, y, 0);
+    this.veloZ = 0;
+    this.homeZ = 0; 
+    this.energy = 0; // intensidad del color
   }
 
-  const plantTimes = {
-    desert: 20,
-    mediumDesert: 25,
-    landscape: 30
-  }
-  // console.log('will hatch', willGrow, plantTimes[currentEcoState])
-  willGrow && plants.push(new Plant(px, py, plantTimes[currentEcoState], random(videoTypes)))
+  tick(grid, x, y) {
+    const a = createVector();
+    if (x > 0) a.add(p5.Vector.sub(grid.p[x - 1][y].pos, this.pos));
+    if (x < grid.p.length - 1) a.add(p5.Vector.sub(grid.p[x + 1][y].pos, this.pos));
+    if (y > 0) a.add(p5.Vector.sub(grid.p[x][y - 1].pos, this.pos));
+    if (y < grid.p[0].length - 1) a.add(p5.Vector.sub(grid.p[x][y + 1].pos, this.pos));
 
-  if (plants.length <= desertPMax) {
-    currentEcoState = 'desert'
-  } else if (plants.length > desertPMax && plants.length <= mediumDesertPMax) {
-    currentEcoState = 'mediumDesert'
-  } else if (plants.length > landscapePMin) {
-    currentEcoState = 'landscape'
+    this.veloZ += a.z * 0.01;
+    this.veloZ -= (this.pos.z - this.homeZ) * 0.005;
+    this.veloZ -= this.veloZ * 0.01;
+    this.pos.z += this.veloZ;
+
+
+    this.energy = max(0, this.energy - 2);
+  }
+
+  draw() {
+ 
+    let base = color(100, 100, 255);
+    let highlight = color(100, 100, 255);
+    let c = lerpColor(base, highlight, this.energy / 100);
+    fill(c);
+    noStroke();
+
+    const r = lerp(1, R * 2, this.pos.z + 1);
+    ellipse(this.pos.x * vidScale, this.pos.y * vidScale, r, r);
   }
 }
 
-class Plant {
-  constructor (px, py, life, type) {
-    this.px = px
-    this.py = py
-    this.life = life
-    this.maxLife = life
-    this.isDead = false
-    this.isPlaying = false
-
-    const sizes = videoSizes[type]
-
-    // const vidSize = random(Object.keys(sizes))
-    const vidSize = sizes[floor(random(Object.keys(sizes).length - 0.3))]
-    // console.log('size', vidSize)
-    // const vidSize = videoSizes[floor(random(Object.keys(videoSizes).length - 1))]
-    // console.log(vidSize, type)
-    const videos = {
-      plantVideos:['assets/Arbusto-1.webm', 'assets/Arbusto-2.webm', 'assets/Arbusto-3.webm'],
-      flowerVideos: ['assets/hongo2.webm', 'assets/lavanda.webm', 'assets/ruda.webm', 'assets/lantana.webm']
+class Grid {
+  constructor(w, h) {
+    this.p = Array.from(Array(w), () => Array(h));
+    for (let i = 0; i < w; i++) {
+      for (let j = 0; j < h; j++) {
+        this.p[i][j] = new Particle(i * W, j * W);
+      }
     }
-    // const flowerVideos = ['assets/hongo2.webm', 'assets/lavanda.webm', 'assets/Arbusto-1.webm', 'assets/Arbusto-2.webm', 'assets/Arbusto-3.webm']
-
-    this.plant = createVideo(random(videos[type]))
-    this.plant.size(vidSize[0], vidSize[1])
-    this.plant.hide()
-    this.plant.stop()
-
-    this.plantGr = createGraphics(vidSize[0], vidSize[1])
-    // console.log(this.life, life)
-
-    this.interval = setInterval(() => {
-      this.life--
-      // console.log('gono', this.life)
-    }, 1000)
   }
-  update () {
-    if (this.life <= 0) {
-      // console.log('kill me')
-      clearInterval(this.interval)
-      this.interval = null
-      this.isDead = true
+
+  tick(bodies) {
+
+    if (mouseIsPressed) {
+      const x = int((mouseX + W / 2) / W);
+      const y = int((mouseY + W / 2) / W);
+      if (this.p[x] && this.p[x][y]) {
+        this.p[x][y].pos.z -= 1;
+      }
     }
 
-  }
-  show () {
-    // stroke('red')
-    // line(this.px, height, this.px, height - 100)
-    // if (!this.isPlaying) this.plant.play()
-    if (!this.isPlaying) {
-      // hongoVid.stop()
-      // hongoVid.play()
-      this.plant.play()
-      this.isPlaying = true
+
+    if (bodies.length > 0) {
+      let keypoints = bodies[0].keypoints;
+      for (let i = 0; i < this.p.length; i++) {
+        for (let j = 0; j < this.p[0].length; j++) {
+          let particle = this.p[i][j];
+          for (let kp of keypoints) {
+            let d = dist(particle.pos.x, particle.pos.y, kp.x, kp.y);
+            if (d < 40) { 
+              // si está cerca de una parte del cuerpo, genera "hundimiento"
+              particle.pos.z -= (20 - d) * 0.01;
+              particle.energy = 100;
+            }
+          }
+          particle.tick(this, i, j);
+        }
+      }
+    } else {
+     
+      for (let i = 0; i < this.p.length; i++) {
+        for (let j = 0; j < this.p[0].length; j++) {
+          this.p[i][j].tick(this, i, j);
+        }
+      }
     }
-    // image(hongoVid, this.px, height - hongoVid.height)
-    // push()
-    // tint(255, map(this.life, this.maxLife, 0, 255, 0))
-    // image(this.plant, this.px, height - this.plant.height)
-    // pop()
-    // this.plantGr.push()
-    // this.plantGr.tint(255, map(this.life, this.maxLife, 0, 255, 0))
-    // this.plantGr.tint(255, 6)
-    this.plantGr.clear()
-    this.plantGr.tint(255, map(this.life, this.maxLife, 0, 255, 0))
-    this.plantGr.image(this.plant, 0, 0)
-    // this.plantGr.pop()
+  }
+
+  draw() {
+    const dx = (scrWidth - (this.p.length - 1) * W) / 2;
+    const dy = (scrHeight - (this.p[0].length - 1) * W) / 2;
+    push();
+    translate(dx, dy);
+    ellipseMode(RADIUS);
+    noStroke();
+    for (let i = 0; i < this.p[0].length; i++) {
+      for (let j = 0; j < this.p.length; j++) {
+        this.p[j][i].draw();
+      }
+    }
+    pop();
   }
 }
