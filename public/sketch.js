@@ -62,30 +62,14 @@ async function setup() {
   capture.size(width/vidScale, height/vidScale)
   capture.hide()
   bodyPose.detectStart(capture, gotPoses)
-  // skeletons = bodyPose.getSkeleton()
-  // console.log('feck', capture)
 }
 
 function draw() {
   background(0)
   if (!capture) return
 
-  // image(capture, 0, 0, width, height)
-  // console.log('fecka', capture)
-  // for (const pose of poses) {
-  //   const { box, left_ear } = pose
-  //   stroke('red')
-  //   noFill()
-  //   strokeWeight(5)
-    
-  //   point(box.xMin * vidScale, box.yMin * vidScale)
-  //   rect(box.xMin * vidScale, box.yMin * vidScale, vidScale * (box.xMax - box.xMin), vidScale * (box.yMax - box.yMin))
-  //   point(left_ear.x * vidScale, left_ear.y * vidScale)
-  // }
-
   grid.tick(poses);
   grid.draw();
-
 }
 
 function handleOsc (msg) {
