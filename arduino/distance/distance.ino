@@ -1,4 +1,8 @@
-
+/*
+ * libreria OSC en en ide de arduino.
+ * https://github.com/CNMAT/OSC
+ *
+ */
 
 #include <WiFi.h>
 #include <WiFiMulti.h>
@@ -14,8 +18,8 @@ WiFiMulti wifiMulti;
 // udp variables
 WiFiUDP Udp;
 // const IPAddress outIp(192,168,1,2);        // remote IP of your computer
-const IPAddress outIp(192,168,0,102);        // remote IP of your computer
-const unsigned int outPort = 7400;          // remote port to receive OSC
+const IPAddress outIp(192,168,0,100);        // remote IP of your computer
+const unsigned int outPort = 9000;//7400;          // remote port to receive OSC
 const unsigned int localPort = 7500;          // remote port to receive OSC
 
 // srf05 variables
@@ -28,7 +32,7 @@ void setup () {
   Serial.begin(115200);
   while (!Serial) { ; }
 
-  // setup distance pins
+  // setup motionPin
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   // setup wifi
@@ -70,29 +74,19 @@ void loop () {
   distance= duration/29/2;
 
   Serial.printf("distance in cm: %i \n", distance);
-  delay(400);
-  // Serial.printf("motion state is: %i \n", motionState);
+  // pack and send OSCMessage
   sendMessage();
+  yield();
+
 }
 
 void sendMessage () {
+  int val = map(distance, 0, 400, 0, 127);
   OSCMessage msg("/distance");
-  msg.add(distance);
+  msg.add(val);
   Udp.beginPacket(outIp, outPort);
   msg.send(Udp);
   Udp.endPacket();
   msg.empty();
   yield();
 }
-
-
-
-
-
-
-
-
-
-
-
-

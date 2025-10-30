@@ -28,7 +28,10 @@ class Grid {
             let d = dist(particle.pos.x, particle.pos.y, kp.x, kp.y);
             if (d < 40) {
               // si está cerca de una parte del cuerpo, genera "hundimiento"
+              // console.log(particle.pos.z)
+
               particle.pos.z -= (20 - d) * 0.01;
+
               particle.energy = 100;
             }
           }

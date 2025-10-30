@@ -25,14 +25,17 @@ class Particle {
   }
 
   draw() {
-    let base = color(100, 100, 255);
-    let highlight = color(100, 100, 255);
+    // let base = color(100, 100, 255);
+    // let highlight = color(100, 100, 255);
+    let base = color(200, 200, 255);
+    let highlight = color(255, 255, 255);
     let c = lerpColor(base, highlight, this.energy / 100);
     fill(c);
     noStroke();
 
     const r = lerp(1, R * 2, this.pos.z + 1);
     ellipse(this.pos.x * vidScale, this.pos.y * vidScale, r, r);
+
   }
 }
 
