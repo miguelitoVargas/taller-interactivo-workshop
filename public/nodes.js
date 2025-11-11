@@ -1,7 +1,7 @@
-const gridCount = 40
+const gridCount = 60
 const friction = 0.99
 const forceMultiplier = 0.15
-const mouseRadius = 50
+const mouseRadius = 100
 let speedLimit
 
 const node = function (x, y, pinned) {
@@ -9,6 +9,11 @@ const node = function (x, y, pinned) {
   this.vel = createVector(0, 0)
   this.force = createVector(0, 0)
   this.pinned = pinned
+  this.color = color(255, 255, 255)
+
+  this.changeColor = (c) => {
+    this.color = c
+  }
 
   this.update = () => {
     if (this.pinned) return
@@ -25,14 +30,17 @@ const node = function (x, y, pinned) {
 const link = function (node1, node2) {
   this.node1 = node1
   this.node2 = node2
+  // this.color = color(255, 255, 255)
+
 
   this.show = () => {
     ellipseMode(CENTER)
     // fill(500, 0, 1000)
     noStroke()
-    fill('white')
-    circle(this.node1.pos.x, this.node1.pos.y, 15)
-    circle(this.node2.pos.x, this.node2.pos.y, 15)
+    fill(this.node1.color)
+    circle(this.node1.pos.x, this.node1.pos.y, 10)
+    fill(this.node2.color)
+    circle(this.node2.pos.x, this.node2.pos.y, 10)
     // stroke('white')
     // beginShape()
     // // vertex(this.node1.pos.x, this.node1.pos.y)

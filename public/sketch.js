@@ -21,6 +21,9 @@ let scrHeight = 1080 / vidScale;
 // nodes grid
 let nodeArray = []
 let linkArray = []
+
+// medusas
+let medusas
 function preload () {
 // let options = { maxFaces: 1, refineLandmarks: false, flipped: false };
   //
@@ -35,6 +38,8 @@ function preload () {
 }
 
 async function setup() {
+  // const m = min(windowWidth, windowHeight)
+  // createCanvas(m, m)
   // createCanvas(windowWidth, windowHeight)
   createCanvas(displayWidth, displayHeight)
   // createCanvas(1920, 1080)
@@ -77,12 +82,17 @@ async function setup() {
 
   nodeArray = createNodes();
   linkArray = createLinks(nodeArray);
+
+  // medusas
+  medusas = new Medusas(width, height)
 }
 
 function draw() {
   background(0)
   if (!capture) return
 
+  // medusas
+  medusas.display()
   // tint(255, 128)
   // image(capture, 0, 0, width, height)
   // mouseIsPressed && grabNodesNearMouse();
@@ -95,6 +105,10 @@ function draw() {
   drawMarkers(poses)
 
   getPoseMovementsAndRipple(poses)
+
+  image(medusas.pGraphics, 0, 0)
+  // mouseIsPressed && grabNodesNearMouse()
+
 }
 
 function handleOsc (msg) {
@@ -194,7 +208,13 @@ function grabNodesNearPoint (x, y) {
   const nodesNearPoint = nodeArray.filter(
     (node) => node.pinned == false && point.dist(node.pos) < 70
   );
-  nodesNearPoint.forEach((node) => (node.pos = point.copy()));
+  nodesNearPoint.forEach((node) => {
+    node.pos = point.copy()
+    node.color = color(255, 255, 0)
+    setTimeout(() => {
+      node.color = color(255, 255, 255)
+    }, 3000)
+  });
 }
 
 function grabNodesNearMouse() {
@@ -202,5 +222,11 @@ function grabNodesNearMouse() {
   const nodesNearMouse = nodeArray.filter(
     (node) => node.pinned == false && mouse.dist(node.pos) < mouseRadius
   );
-  nodesNearMouse.forEach((node) => (node.pos = mouse.copy()));
+  nodesNearMouse.forEach((node) => {
+    node.pos = mouse.copy()
+    node.color = color(255, 255, 0)
+    setTimeout(() => {
+      node.color = color(255, 255, 255)
+    }, 1000)
+  });
 }
