@@ -106,8 +106,21 @@ class Tentacle {
 
 
 class Creature {
-  constructor(pos, rx, ry, nb, l, ts, td, clr) {
-    this.position = pos.copy()
+  constructor(rx, ry, nb, l, ts, td, clr) {
+    // canvas
+    const gc = document.createElement('canvas')
+    gc.getContext('2d', {
+      willReadFrequently: true
+    })
+
+    this.pGraphics = createGraphics(220, 220, P2D, gc)
+    // console.log('graphics', this.pGraphics.elt, 'canvas', gc)
+
+    this.pGraphics.noStroke()
+    this.pGraphics.colorMode(HSB, 360, 100, 100, 100)
+    this.pGraphics.frameRate(30)
+    // medusa vars
+    this.position = createVector(this.pGraphics.width/2, this.pGraphics.height/2) //pos.copy()
     this.radX = rx
     this.radY = ry
     this.orientation = 0
@@ -127,29 +140,29 @@ class Creature {
 
   update(targetX, targetY) {
     let d = dist(targetX, targetY, this.position.x, this.position.y)
-    // this.position.add(createVector(random(-1, 1), random(-1, 1)))
+    this.position.add(createVector(random(-1, 1), random(-1, 1)))
 
 
-    if (this.state === "Wander") {
-      this.position.add(createVector(random(-1, 1), random(-1, 1)))
-      if (d < 150) this.state = "Avoid"
-    } else if (this.state === "Avoid") {
-      if (d < 100) {
-        let a = atan2(this.position.y - targetY, this.position.x - targetX)
-        this.position.x += cos(a) * 2
-        this.position.y += sin(a) * 2
-      } else {
-        this.state = "Approach"
-      }
-    } else if (this.state === "Approach") {
-      if (d < 100) this.state = "Avoid"
-      else if (d < 300) {
-        this.position.x += (targetX - this.position.x) * 0.02
-        this.position.y += (targetY - this.position.y) * 0.02
-      } else {
-        this.state = "Wander"
-      }
-    }
+    // if (this.state === "Wander") {
+    //   this.position.add(createVector(random(-1, 1), random(-1, 1)))
+    //   if (d < 150) this.state = "Avoid"
+    // } else if (this.state === "Avoid") {
+    //   if (d < 100) {
+    //     let a = atan2(this.position.y - targetY, this.position.x - targetX)
+    //     this.position.x += cos(a) * 2
+    //     this.position.y += sin(a) * 2
+    //   } else {
+    //     this.state = "Approach"
+    //   }
+    // } else if (this.state === "Approach") {
+    //   if (d < 100) this.state = "Avoid"
+    //   else if (d < 300) {
+    //     this.position.x += (targetX - this.position.x) * 0.02
+    //     this.position.y += (targetY - this.position.y) * 0.02
+    //   } else {
+    //     this.state = "Wander"
+    //   }
+    // }
 
     for (let i = 0; i < this.nbTentacles; i++) {
       let t = this.tentacles[i]
@@ -162,15 +175,22 @@ class Creature {
     this.orientation += random(-3, 3) * radians(0.1)
   }
 
-  draw(graphics) {
-    graphics.push()
+  draw() {
+    // this.pGraphics.background(0, 0, 0, 25)
+    this.pGraphics.fill(0, 10)
+    this.pGraphics.rect(0, 0, this.pGraphics.width, this.pGraphics.height, 100)
+    this.pGraphics.blendMode(ADD)
+
+    // this.pGraphics.push()
     // drawingContext.shadowBlur = 10 // 🔧 antes 20 → menos resplandor
     // drawingContext.shadowColor = this.headClr
-    graphics.fill(this.headClr)
-    graphics.ellipse(this.position.x, this.position.y, this.radX * 2, this.radY * 2)
+    this.pGraphics.fill(this.headClr)
+    this.pGraphics.ellipse(this.position.x, this.position.y, this.radX * 2, this.radY * 2)
     for (let t of this.tentacles) {
-      t.draw(graphics)
+      t.draw(this.pGraphics)
     }
-    graphics.pop()
+    // this.pGraphics.pop()
+    this.pGraphics.blendMode(BLEND)
+    
   }
 }

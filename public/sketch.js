@@ -24,6 +24,8 @@ let linkArray = []
 
 // medusas
 let medusas
+let medusa
+
 function preload () {
 // let options = { maxFaces: 1, refineLandmarks: false, flipped: false };
   //
@@ -40,8 +42,8 @@ function preload () {
 async function setup() {
   // const m = min(windowWidth, windowHeight)
   // createCanvas(m, m)
-  // createCanvas(windowWidth, windowHeight)
-  createCanvas(displayWidth, displayHeight)
+  createCanvas(windowWidth, windowHeight)
+  // createCanvas(displayWidth, displayHeight)
   // createCanvas(1920, 1080)
 
 
@@ -84,7 +86,17 @@ async function setup() {
   linkArray = createLinks(nodeArray);
 
   // medusas
-  medusas = new Medusas(width, height)
+  // medusas = new Medusas(width, height)
+  medusa = new Creature(
+    // createVector(width / 2, height / 2),
+    20,
+    20,
+    10,
+    40,
+    10,
+    3,
+    color(random(160, 190), 80, 90 * brightnessLevel, 20) // menor brillo y alfa
+  )
 }
 
 function draw() {
@@ -92,10 +104,13 @@ function draw() {
   if (!capture) return
 
   // medusas
-  medusas.display()
+  // medusas.display()
   // tint(255, 128)
   // image(capture, 0, 0, width, height)
   // mouseIsPressed && grabNodesNearMouse();
+  medusa.update(mouseX, mouseY)
+  medusa.draw()
+
 
   linkArray.forEach((link) => link.update());
   nodeArray.forEach((node) => node.update());
@@ -106,7 +121,8 @@ function draw() {
 
   getPoseMovementsAndRipple(poses)
 
-  image(medusas.pGraphics, 0, 0)
+  image(medusa.pGraphics, width/2, height/2)
+  // image(medusas.pGraphics, 0, 0)
   // mouseIsPressed && grabNodesNearMouse()
 
 }
