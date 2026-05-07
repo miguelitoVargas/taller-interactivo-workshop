@@ -1,4 +1,7 @@
-const W = 640, H = 480, SPD = 4, R = 18;
+let W = 0, H = 0
+const vidScale = 4
+let textVisible = false
+const SPD = 4, R = 18;
 const C1 = [29, 158, 117];
 const C2 = [216, 90, 48];
 
@@ -12,16 +15,17 @@ let usingCamera = false;
 
 // Colores objetivo (RGB) y si están activos
 const targets = [
-  // { r: 230, g: 57,  b: 70,  name: 'Rojo',     active: true },
-  { r: 219, g: 30,  b: 62,  name: 'Rojo',     active: true },
-  { r: 84,  g: 153, b: 83,  name: 'Verde',     active: true },
-  // { r: 45,  g: 198, b: 83,  name: 'Verde',     active: true },
-  // { r: 67,  g: 97,  b: 238, name: 'Azul',      active: true },
-  { r: 25,  g: 72,  b: 128, name: 'Azul',      active: true },
-  { r: 200, g: 200, b: 73,  name: 'Amarillo',  active: true },
-  // { r: 244, g: 208, b: 63,  name: 'Amarillo',  active: true },
+  { r: 230, g: 57,  b: 70,  name: 'Rojo',     active: true },
+  // { r: 219, g: 30,  b: 62,  name: 'Rojo',     active: true },
+  // { r: 84,  g: 153, b: 83,  name: 'Verde',     active: true },
+  { r: 45,  g: 198, b: 83,  name: 'Verde',     active: true },
+  { r: 67,  g: 97,  b: 238, name: 'Azul',      active: true },
+  // { r: 25,  g: 72,  b: 128, name: 'Azul',      active: true },
+  // { r: 200, g: 200, b: 73,  name: 'Amarillo',  active: true },
+  { r: 244, g: 208, b: 63,  name: 'Amarillo',  active: true },
 ];
 
+let uiParent
 let tolerance = 60;
 let minBlobArea = 50;
 
@@ -36,21 +40,26 @@ let colorToggles = [];
 // estados de la aplicacion
 // blobs, jugandoci: 0
 let estado = 'blobs'
+let winner = 0
+let winnerCol = [0,0,0]
 
 function makeBall(x, y, col) {
   return { x, y, col };
 }
 
 function reset() {
-  pg = createGraphics(W, H);
+  pg = createGraphics(width, height);
   pg.background(240, 238, 232);
   b1 = makeBall(W * 0.25, H / 2, C1);
   b2 = makeBall(W * 0.75, H / 2, C2);
   over = false;
+  // estado = 'jugando'
 }
 
 async function setup() {
-  createCanvas(W, H + 160);
+  createCanvas(displayWidth, displayHeight);
+  W = width/vidScale
+  H = height/vidScale
   pixelDensity(1)
   colorMode(RGB)
   // capture
@@ -94,7 +103,7 @@ async function setup() {
 function paintUnder(b) {
   pg.noStroke();
   pg.fill(...b.col, 200);
-  pg.ellipse(b.x, b.y, R * 2.2);
+  pg.ellipse(b.x * vidScale, b.y * vidScale, R * 2.2);
 }
 
 function moveBall(b, upKey, downKey, leftKey, rightKey) {
@@ -107,8 +116,8 @@ function moveBall(b, upKey, downKey, leftKey, rightKey) {
 }
 
 function moveBallXY (b, x, y) {
-  b.x = x
-  b.y = y
+  b.x = x //* vidScale
+  b.y = y //* vidScale
 
   paintUnder(b)
 
@@ -130,18 +139,18 @@ function countPixels() {
 function drawBall(b) {
   noStroke();
   fill(...b.col, 60);
-  ellipse(b.x, b.y, (R + 8) * 2);
+  ellipse(b.x * vidScale, b.y * vidScale, (R + 8) * 2);
   fill(...b.col);
-  ellipse(b.x, b.y, R * 2);
+  ellipse(b.x * vidScale, b.y * vidScale, R * 2);
   fill(255, 255, 255, 180);
-  ellipse(b.x - R * 0.28, b.y - R * 0.28, R * 0.48);
+  ellipse(b.x * vidScale - R * 0.28, b.y * vidScale - R * 0.28, R * 0.48);
 }
 
 function drawHUD(c1, c2, total) {
   let pct1 = total > 0 ? c1 / total : 0;
   let pct2 = total > 0 ? c2 / total : 0;
-  let barW = 200, barH = 10;
-  let bx = (W - barW) / 2, by = 10;
+  let barW = width * 0.33, barH = 50;
+  let bx = (width - barW) / 2, by = 50;
 
   noStroke();
   fill(240, 238, 232, 200);
@@ -155,13 +164,15 @@ function drawHUD(c1, c2, total) {
   fill(200, 198, 192);
   rect(bx + barW * pct1, by, barW * (1 - pct1 - pct2), barH);
 
-  textSize(11);
+  // textSize(11);
+  const fSize = width * 0.02
+  textSize(fSize);
   textAlign(LEFT);
   fill(...C1);
-  text(Math.round(pct1 * 100) + '%', bx - 32, by + 9);
+  text(Math.round(pct1 * 100) + '%', bx - fSize*2, by);
   textAlign(RIGHT);
   fill(...C2);
-  text(Math.round(pct2 * 100) + '%', bx + barW + 32, by + 9);
+  text(Math.round(pct2 * 100) + '%', bx + barW + fSize*2, by);
 }
 
 
@@ -287,6 +298,7 @@ function drawAnnotations() {
 }
 
 function drawPanel() {
+  if (estado === 'jugando') return
   // Fondo panel
   noStroke();
   fill(17, 17, 24);
@@ -333,6 +345,7 @@ function drawPanel() {
 function draw() {
   if (!capture) return
 
+
   capture.loadPixels();
   detectBlobsFromPixels(capture.pixels, W, H);
 
@@ -351,34 +364,59 @@ function draw() {
 
   image(pg, 0, 0);
 
+  if (estado === 'over') {
+    noStroke();
+    fill(0, 0, 0, 120);
+    rect(0, 0, width, height);
+
+    winnerCol = winner === 1 ? C1 : C2;
+    const h1 = width * 0.05
+    const h2 = width * 0.02
+    fill(...winnerCol);
+    textAlign(CENTER, CENTER);
+    textSize(h1);
+    text('Jugador ' + winner + ' gana!', width / 2, height / 2 - 16);
+    textSize(h2);
+    fill(220, 218, 212);
+    text('Iniciando nueva partida....', width / 2, height / 2 + h1);
+  }
+
+  let { c1, c2, total } = countPixels();
+  let painted = (c1 + c2) / (width * height);
+
+  if (!over && painted > 0.03 && estado == 'jugando') {
+    over = true;
+    estado = 'over'
+    winner = c1 > c2 ? 1 : 2;
+
+    setTimeout(() => {
+      reset()
+      estado = 'jugando'
+    }, 3000)
+    // noStroke();
+    // fill(0, 0, 0, 120);
+    // rect(0, 0, width, height);
+
+    // // fill(...wcol);
+    // fill('black')
+    // textAlign(CENTER, CENTER);
+    // textSize(28);
+    // text('Jugador ' + winner + ' gana!', width / 2, height / 2 - 16);
+    // textSize(13);
+    // fill('black')
+    // // fill(220, 218, 212);
+    // text('Presiona R para jugar de nuevo', width / 2, height / 2 + 20);
+  }
+
   if (!over && estado === 'jugando') {
     drawBall(b1);
     drawBall(b2);
   }
 
-  let { c1, c2, total } = countPixels();
-  let painted = (c1 + c2) / (W * H);
   if (estado === 'jugando') {
     drawHUD(c1, c2, total);
   }
 
-  if (!over && painted > 0.88 && estado == 'jugando') {
-    over = true;
-    let winner = c1 > c2 ? 1 : 2;
-    let wcol = winner === 1 ? C1 : C2;
-
-    noStroke();
-    fill(0, 0, 0, 120);
-    rect(0, 0, W, H);
-
-    fill(...wcol);
-    textAlign(CENTER, CENTER);
-    textSize(28);
-    text('Jugador ' + winner + ' gana!', W / 2, H / 2 - 16);
-    textSize(13);
-    fill(220, 218, 212);
-    text('Presiona R para jugar de nuevo', W / 2, H / 2 + 20);
-  }
 
   if (estado === 'blobs') {
     background('black')
@@ -400,13 +438,27 @@ function draw() {
 function keyPressed() {
   if (key === 'r' || key === 'R') reset();
 
-  key === 'b' && (print(blobs, estado))
+  if (key === 'b') {
+    estado = 'blobs'
+    uiParent.show()
+  } else if (key === 'j') {
+    estado = 'jugando'
+    uiParent.hide()
+  }
+  // key === 'b' && (estado = 'blobs')
 
-  key === 'j' && (estado = 'jugando')
+  // key === 'j' && (estado = 'jugando')
+  if (key === 'f') {
+    const fs = fullscreen()
+    fullscreen(!fs)
+  }
 
 }
 
 function buildUI() {
+  uiParent = createDiv()
+  
+  
   // Botón cámara
   // camBtn = createButton('▶ Activar cámara');
   // camBtn.position(10, H + 10);
@@ -421,27 +473,37 @@ function buildUI() {
   // camBtn.mousePressed(toggleCamera);
 
   // Slider tolerancia
-  createElement('span', 'Tolerancia:').position(10, H + 50).style('font-family','monospace').style('font-size','12px').style('color','#ccc');
+  const tolLabel = createElement('span', 'Tolerancia:').position(10, H + 50).style('font-family','monospace').style('font-size','12px').style('color','#ccc');
+  tolLabel.parent(uiParent)
+
   tolSlider = createSlider(10, 130, tolerance, 1);
   tolSlider.position(110, H + 50);
   tolSlider.style('width', '120px');
+  tolSlider.parent(uiParent)
 
   // Slider tamaño mínimo
-  createElement('span', 'Tamaño mín:').position(10, H + 80).style('font-family','monospace').style('font-size','12px').style('color','#ccc');
+  const sizeLabel = createElement('span', 'Tamaño mín:').position(10, H + 80).style('font-family','monospace').style('font-size','12px').style('color','#ccc');
+  sizeLabel.parent(uiParent)
   sizeSlider = createSlider(100, 5000, minBlobArea, 50);
+  sizeSlider.parent(uiParent)
   sizeSlider.position(110, H + 80);
   sizeSlider.style('width', '120px');
 
+
+  const pickersParent = createDiv()
+  pickersParent.parent(uiParent)
   // Color pickers + toggles por cada target
   targets.forEach((t, i) => {
-    const xBase = 260 + i * 140;
+    const xBase = 640 + i * 140;
 
-    createElement('span', t.name).position(xBase, H + 12)
+    const l = createElement('span', t.name).position(xBase, H + 12)
       .style('font-family', 'monospace')
       .style('font-size', '11px')
       .style('color', `rgb(${t.r},${t.g},${t.b})`);
+    l.parent(pickersParent)
 
     const picker = createColorPicker(color(t.r, t.g, t.b));
+    picker.parent(pickersParent)
     picker.position(xBase, H + 30);
     picker.style('width', '50px');
     picker.style('height', '28px');
@@ -454,6 +516,7 @@ function buildUI() {
     colorPickers.push(picker);
 
     const btn = createButton(t.active ? 'ON' : 'OFF');
+    btn.parent(pickersParent)
     btn.position(xBase + 56, H + 30);
     btn.style('font-family', 'monospace');
     btn.style('font-size', '11px');
